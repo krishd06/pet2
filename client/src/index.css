@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#fffbf5] text-[#2c241e] antialiased selection:bg-brand-500 selection:text-white;
+  }
+}
+
+/* Custom smooth transitions & animations */
+.transition-smooth {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Glassmorphism accent */
+.glass-nav {
+  background: rgba(255, 251, 245, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #fdf7ee;
+}
+::-webkit-scrollbar-thumb {
+  background: #e8dbca;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #d8c5b0;
+}
+
+/* 3D Perspective & Motion helpers */
+.perspective-1000 {
+  perspective: 1000px;
+}
+.perspective-1200 {
+  perspective: 1200px;
+}
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+.animate-float-slow {
+  animation: float-slow 5s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════
+ *  3D Antigravity Canvas Layering
+ *  Canvas: fixed behind everything  (z-index: 0)
+ *  Content: scrollable on top       (z-index: 1+)
+ * ═══════════════════════════════════════════════════ */
+.antigravity-canvas-container {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;   /* let DOM scroll through */
+  overflow: hidden;
+}
+
+.antigravity-canvas-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Scrollable content that overlays the 3D canvas */
+.scroll-overlay {
+  position: relative;
+  z-index: 1;
+}
+
+/* Hero section: mostly transparent so 3D shows through */
+.hero-3d-window {
+  position: relative;
+  z-index: 1;
+  /* Dark gradient overlay for text readability over 3D */
+  background: linear-gradient(
+    180deg,
+    rgba(15, 13, 10, 0.55) 0%,
+    rgba(26, 21, 16, 0.7) 40%,
+    rgba(26, 21, 16, 0.85) 80%,
+    rgba(255, 251, 245, 1) 100%
+  );
+}
+
+/* Sections that should fully obscure the 3D background */
+.section-opaque {
+  position: relative;
+  z-index: 2;
+  background-color: #fffbf5;
+}
+
+/* Hide scrollbar for Chrome, Safari, Edge, Firefox */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+
