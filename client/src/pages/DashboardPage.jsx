@@ -13,32 +13,40 @@ import {
   ShieldCheck,
   RotateCcw,
   HeartHandshake,
-  PawPrint
+  PawPrint,
+  Lock
 } from 'lucide-react';
-import Animal3DShowcase from '../components/Animal3DShowcase.jsx';
 
 export default function DashboardPage() {
-  const { user, guestToken, isAuthenticated } = useAuth();
+  const { user, isPremium, guestToken, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const [assessments, setAssessments] = useState([]);
   const [trials, setTrials] = useState([]);
   const [dogProgress, setDogProgress] = useState([]);
+  const [reminders, setReminders] = useState([]);
+  const [newReminderTitle, setNewReminderTitle] = useState('');
+  const [newReminderPet, setNewReminderPet] = useState('');
+  const [newReminderDate, setNewReminderDate] = useState('');
+  const [newReminderCategory, setNewReminderCategory] = useState('vaccination');
+  const [addingReminder, setAddingReminder] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadDashboard() {
       setLoading(true);
       try {
-        const [asmRes, trialsRes, dogProgRes] = await Promise.all([
+        const [asmRes, trialsRes, dogProgRes, remRes] = await Promise.all([
           api.getMyAssessments(guestToken).catch(() => ({ assessments: [] })),
           api.getMyTrials(guestToken).catch(() => ({ trials: [] })),
-          api.getOnboardingProgress('dog', guestToken).catch(() => ({ completedItems: [] }))
+          api.getOnboardingProgress('dog', guestToken).catch(() => ({ completedItems: [] })),
+          isPremium ? api.getReminders().catch(() => ({ reminders: [] })) : Promise.resolve({ reminders: [] })
         ]);
 
         if (asmRes?.assessments) setAssessments(asmRes.assessments);
         if (trialsRes?.trials) setTrials(trialsRes.trials);
         if (dogProgRes?.completedItems) setDogProgress(dogProgRes.completedItems);
+        if (remRes?.reminders) setReminders(remRes.reminders);
       } catch (err) {
         console.warn('Dashboard load error:', err);
       } finally {
@@ -46,34 +54,44 @@ export default function DashboardPage() {
       }
     }
     loadDashboard();
-  }, [guestToken]);
+  }, [guestToken, isPremium]);
+
+  async function handleAddReminder(e) {
+    e.preventDefault();
+    if (!newReminderTitle || !newReminderDate) return;
+    setAddingReminder(true);
+    try {
+      const created = await api.saveReminder({
+        petName: newReminderPet || 'My Pet',
+        title: newReminderTitle,
+        dueDate: newReminderDate,
+        category: newReminderCategory
+      });
+      setReminders((prev) => [created, ...prev]);
+      setNewReminderTitle('');
+      setNewReminderPet('');
+      setNewReminderDate('');
+    } catch (err) {
+      console.error('Failed to add reminder:', err);
+    } finally {
+      setAddingReminder(false);
+    }
+  }
+
+  async function handleToggleReminder(remId, currentCompleted) {
+    try {
+      await api.toggleReminder(remId, !currentCompleted);
+      setReminders((prev) =>
+        prev.map((r) => ((r.id || r._id) === remId ? { ...r, completed: !currentCompleted } : r))
+      );
+    } catch (err) {
+      console.error('Toggle reminder error:', err);
+    }
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
       
-      {/* Quick Feature Navigation Bar */}
-      <div className="bg-white/90 backdrop-blur-md rounded-2xl p-2 border border-sand-200 shadow-sm flex items-center justify-between gap-1 overflow-x-auto no-scrollbar">
-        {[
-          { to: '/quiz', label: 'Match Quiz', icon: Compass },
-          { to: '/pets', label: 'Explore Breeds', icon: PawPrint },
-          { to: '/adopt', label: 'Adoptable Pets', icon: HeartHandshake },
-          { to: '/foster', label: 'Trial Foster', icon: Calendar },
-          { to: '/first-30-days', label: 'First 30 Days', icon: Calendar },
-          { to: '/advisor', label: 'AI Advisor', icon: Sparkles }
-        ].map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-sand-800 hover:text-brand-600 hover:bg-sand-100/70 transition-all whitespace-nowrap"
-            >
-              <Icon className="w-4 h-4 text-brand-500" />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
-      </div>
 
       {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-brand-600 via-brand-500 to-amber-500 rounded-3xl p-6 sm:p-10 text-white shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -238,14 +256,137 @@ export default function DashboardPage() {
             </Link>
           </div>
 
+          {/* Feature E: Post-Adoption Reminders Tracker */}
+          <div className="bg-white rounded-3xl p-6 border border-sand-200 shadow-card space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-brand-600" />
+                <h3 className="text-base font-extrabold text-sand-900">
+                  Pet Medical Reminders ({reminders.length})
+                </h3>
+              </div>
+              {isPremium ? (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                  Premium
+                </span>
+              ) : (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sand-200 text-sand-700 flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Locked
+                </span>
+              )}
+            </div>
+
+            {isPremium ? (
+              <div className="space-y-4">
+                {/* Add Reminder Form */}
+                <form onSubmit={handleAddReminder} className="space-y-2 bg-sand-50 p-3 rounded-2xl border border-sand-200 text-xs">
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Pet Name (e.g. Bruno)"
+                      value={newReminderPet}
+                      onChange={(e) => setNewReminderPet(e.target.value)}
+                      className="bg-white border border-sand-300 rounded-xl px-2.5 py-1.5 text-xs text-sand-900"
+                    />
+                    <select
+                      value={newReminderCategory}
+                      onChange={(e) => setNewReminderCategory(e.target.value)}
+                      className="bg-white border border-sand-300 rounded-xl px-2.5 py-1.5 text-xs text-sand-900"
+                    >
+                      <option value="vaccination">Vaccination</option>
+                      <option value="deworming">Deworming</option>
+                      <option value="checkup">Vet Checkup</option>
+                      <option value="grooming">Grooming</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Title (e.g. Rabies Booster)"
+                      value={newReminderTitle}
+                      onChange={(e) => setNewReminderTitle(e.target.value)}
+                      className="bg-white border border-sand-300 rounded-xl px-2.5 py-1.5 text-xs text-sand-900"
+                      required
+                    />
+                    <input
+                      type="date"
+                      value={newReminderDate}
+                      onChange={(e) => setNewReminderDate(e.target.value)}
+                      className="bg-white border border-sand-300 rounded-xl px-2.5 py-1.5 text-xs text-sand-900"
+                      required
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={addingReminder}
+                    className="w-full py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs transition-colors"
+                  >
+                    {addingReminder ? 'Adding...' : '+ Add Medical Reminder'}
+                  </button>
+                </form>
+
+                {/* Reminders List */}
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {reminders.length === 0 ? (
+                    <p className="text-xs text-sand-800 text-center py-2">
+                      No reminders scheduled. Add your puppy or Indie's next vaccination date above!
+                    </p>
+                  ) : (
+                    reminders.map((rem) => {
+                      const id = rem.id || rem._id;
+                      return (
+                        <div
+                          key={id}
+                          className={`p-2.5 rounded-xl border flex items-center justify-between text-xs transition-all ${
+                            rem.completed ? 'bg-sand-100 border-sand-200 opacity-60' : 'bg-sand-50 border-sand-200'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={!!rem.completed}
+                              onChange={() => handleToggleReminder(id, rem.completed)}
+                              className="accent-brand-500 w-4 h-4 rounded"
+                            />
+                            <div>
+                              <span className={`font-bold block ${rem.completed ? 'line-through text-sand-700' : 'text-sand-900'}`}>
+                                {rem.title} ({rem.petName || 'Pet'})
+                              </span>
+                              <span className="text-[10px] text-sand-800">
+                                Due: {rem.dueDate ? new Date(rem.dueDate).toLocaleDateString() : 'Pending'}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-sand-200 text-sand-800">
+                            {rem.category}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-sand-50 p-4 rounded-2xl border border-sand-200 text-center space-y-2">
+                <Lock className="w-6 h-6 text-brand-600 mx-auto" />
+                <h4 className="text-xs font-bold text-sand-900">Post-Adoption Vaccine & Vet Log</h4>
+                <p className="text-[11px] text-sand-800 leading-relaxed">
+                  Track recurring rabies boosters, tick treatments, and vet consultations with automatic alerts.
+                </p>
+                <Link
+                  to="/pricing"
+                  className="inline-block px-4 py-2 rounded-xl bg-brand-500 text-white font-bold text-xs shadow-soft transition-colors mt-1"
+                >
+                  Unlock with Premium (₹299/mo)
+                </Link>
+              </div>
+            )}
+          </div>
+
         </div>
 
       </div>
 
-      {/* 3D Interactive Companion Showcase */}
-      <div className="pt-4">
-        <Animal3DShowcase />
-      </div>
 
     </div>
   );

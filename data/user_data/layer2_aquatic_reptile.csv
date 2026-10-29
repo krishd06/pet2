@@ -1,0 +1,4 @@
+﻿Species,Breed,Origin,Enclosure,Water/Setup,Lifespan,Care(1-5),HeatTol(1-5),ColdTol(1-5),Kids(1-5),1stTime(1-5),Apt(1-5),Health Issues,VetCost(₹),Price(₹),Avail,Temperament
+Fish,Betta,Thailand,5-10 Gal,"Heated, Filtered",2-5,2,5,1,2,4,5,"Fin rot, Dropsy",N/A,100-500,Common,"Aggressive to males, interactive"
+Turtle,Red-eared Slider,US,75+ Gal,Water + Basking,20-30,4,4,2,2,2,3,"Shell rot, MBD, Salmonella",3k-5k,500-1.5k,Common,"Invasive, massive bio-load, messy"
+Reptile,Leopard Gecko,Asia,20+ Gal,"Dry, Warm Hide",15-20,2,4,2,3,4,5,"Impaction, MBD",2k-4k,3k-6k,Common,"Docile, insectivore, nocturnal"

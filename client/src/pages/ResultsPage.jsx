@@ -19,8 +19,18 @@ import {
   SlidersHorizontal,
   ExternalLink,
   MapPin,
-  Calendar
+  Calendar,
+  Lock,
+  Unlock,
+  Bot,
+  BrainCircuit,
+  TrendingUp,
+  BarChart3,
+  Layers,
+  Activity
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext.jsx';
+import PartnerRecommendations from '../components/PartnerRecommendations.jsx';
 import {
   BarChart,
   Bar,
@@ -28,11 +38,14 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Legend
+  Legend,
+  CartesianGrid,
+  Cell
 } from 'recharts';
 
 export default function ResultsPage() {
   const { id } = useParams();
+  const { user, isPremium } = useAuth();
   const [assessment, setAssessment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -40,6 +53,7 @@ export default function ResultsPage() {
   // Expandable cards state (key: petSlug or petId)
   const [expandedPet, setExpandedPet] = useState(null);
   const [showWhyNotShown, setShowWhyNotShown] = useState(false);
+  const [activeDiagramTab, setActiveDiagramTab] = useState('comparison'); // 'comparison', 'readiness', 'costs'
 
   // Compare selection (max 3)
   const [comparePets, setComparePets] = useState([]);
@@ -50,6 +64,76 @@ export default function ResultsPage() {
   const [selectedCity, setSelectedCity] = useState('Mumbai');
   const [costForecast, setCostForecast] = useState(null);
   const [costLoading, setCostLoading] = useState(false);
+
+  // Feature E: Premium Remediation Roadmap State
+  const [roadmapSteps, setRoadmapSteps] = useState([
+    { id: 1, week: 'Week 1', title: 'Landlord & Housing Society NOC', desc: 'Secure formal written approval and review society by-laws regarding pets and lift usage.', done: false },
+    { id: 2, week: 'Week 1', title: 'Balcony & Home Pet-Proofing', desc: 'Install safety net mesh on high-rise balconies, tuck away loose electrical cables, and remove toxic plants.', done: false },
+    { id: 3, week: 'Week 2', title: '24/7 Emergency Vet Mapping', desc: 'Locate 2 verified 24/7 veterinary emergency clinics within a 5km radius and save their emergency helpline.', done: false },
+    { id: 4, week: 'Week 2', title: 'Starter Essentials Procurement', desc: 'Order stainless steel heavy-bottom bowls, chew-proof harness, parasite prevention, and high-protein puppy/dog food.', done: false },
+    { id: 5, week: 'Week 3', title: 'Daily Walking Schedule Calibration', desc: 'Fix 45-60 min morning and evening exercise windows to acclimatize your urban work routine.', done: false },
+    { id: 6, week: 'Week 4', title: 'Shelter Trial Foster Immersion', desc: 'Book a 14-day trial foster with your matched Indie to test real-world household dynamics before final adoption.', done: false },
+  ]);
+  const [savingRoadmap, setSavingRoadmap] = useState(false);
+  const [roadmapSaved, setRoadmapSaved] = useState(false);
+
+  // Feature E: Personalised Cost Plan State
+  const [customMonthlyFood, setCustomMonthlyFood] = useState(2500);
+  const [customMonthlyGrooming, setCustomMonthlyGrooming] = useState(800);
+  const [customMonthlyInsurance, setCustomMonthlyInsurance] = useState(600);
+  const [customMonthlyVet, setCustomMonthlyVet] = useState(700);
+  const [savingPlan, setSavingPlan] = useState(false);
+  const [planSaved, setPlanSaved] = useState(false);
+
+  async function handleToggleRoadmapStep(stepId) {
+    setRoadmapSteps(prev => prev.map(s => s.id === stepId ? { ...s, done: !s.done } : s));
+  }
+
+  async function handleSaveRoadmap() {
+    if (!user) return;
+    setSavingRoadmap(true);
+    try {
+      await api.saveRoadmap({
+        assessmentId: id,
+        targetPet: selectedCostPet?.pet?.name || 'Selected Pet',
+        currentScore: assessment?.readiness?.overallScore || 70,
+        steps: roadmapSteps
+      });
+      setRoadmapSaved(true);
+      setTimeout(() => setRoadmapSaved(false), 3000);
+    } catch (e) {
+      console.error('Roadmap save error:', e);
+    } finally {
+      setSavingRoadmap(false);
+    }
+  }
+
+  async function handleSaveCostPlan() {
+    if (!user) return;
+    setSavingPlan(true);
+    try {
+      const monthlyTotal = customMonthlyFood + customMonthlyGrooming + customMonthlyInsurance + customMonthlyVet;
+      await api.saveCostPlan({
+        assessmentId: id,
+        city: selectedCity,
+        petName: selectedCostPet?.pet?.name || 'Selected Pet',
+        customBudget: {
+          food: customMonthlyFood,
+          grooming: customMonthlyGrooming,
+          insurance: customMonthlyInsurance,
+          routineVet: customMonthlyVet,
+          monthlyTotal,
+          oneYearTotal: (costForecast?.upfront?.totalUpfront || 5000) + (monthlyTotal * 12)
+        }
+      });
+      setPlanSaved(true);
+      setTimeout(() => setPlanSaved(false), 3000);
+    } catch (e) {
+      console.error('Cost plan save error:', e);
+    } finally {
+      setSavingPlan(false);
+    }
+  }
 
   useEffect(() => {
     async function loadAssessment() {
@@ -146,6 +230,60 @@ export default function ResultsPage() {
       : readiness.band === 'Almost Ready'
       ? 'bg-amber-100 text-amber-800 border-amber-200'
       : 'bg-red-100 text-red-800 border-red-200';
+
+  // Top 3 Recommended Animals (guaranteed at least 3)
+  const top3Recommended = rankedMatches.slice(0, 3);
+
+  // Grouped dimension comparison for top 3 animals
+  const top3ComparisonData = [
+    {
+      dimension: 'Space Fit',
+      [top3Recommended[0]?.petName || 'Match 1']: top3Recommended[0]?.dimensionScores?.space || top3Recommended[0]?.matchScore || 85,
+      ...(top3Recommended[1] ? { [top3Recommended[1]?.petName || 'Match 2']: top3Recommended[1]?.dimensionScores?.space || top3Recommended[1]?.matchScore || 80 } : {}),
+      ...(top3Recommended[2] ? { [top3Recommended[2]?.petName || 'Match 3']: top3Recommended[2]?.dimensionScores?.space || top3Recommended[2]?.matchScore || 75 } : {})
+    },
+    {
+      dimension: 'Climate Adaptation',
+      [top3Recommended[0]?.petName || 'Match 1']: top3Recommended[0]?.dimensionScores?.climate_fit || ((top3Recommended[0]?.pet?.heat_tolerance || 4) * 20),
+      ...(top3Recommended[1] ? { [top3Recommended[1]?.petName || 'Match 2']: top3Recommended[1]?.dimensionScores?.climate_fit || ((top3Recommended[1]?.pet?.heat_tolerance || 4) * 20) } : {}),
+      ...(top3Recommended[2] ? { [top3Recommended[2]?.petName || 'Match 3']: top3Recommended[2]?.dimensionScores?.climate_fit || ((top3Recommended[2]?.pet?.heat_tolerance || 4) * 20) } : {})
+    },
+    {
+      dimension: 'Alone Time Fit',
+      [top3Recommended[0]?.petName || 'Match 1']: Math.min(100, Math.round(((top3Recommended[0]?.pet?.max_alone_hours || 6) / 8) * 100)),
+      ...(top3Recommended[1] ? { [top3Recommended[1]?.petName || 'Match 2']: Math.min(100, Math.round(((top3Recommended[1]?.pet?.max_alone_hours || 6) / 8) * 100)) } : {}),
+      ...(top3Recommended[2] ? { [top3Recommended[2]?.petName || 'Match 3']: Math.min(100, Math.round(((top3Recommended[2]?.pet?.max_alone_hours || 6) / 8) * 100)) } : {})
+    },
+    {
+      dimension: 'Routine Fit',
+      [top3Recommended[0]?.petName || 'Match 1']: top3Recommended[0]?.dimensionScores?.activity || top3Recommended[0]?.matchScore || 82,
+      ...(top3Recommended[1] ? { [top3Recommended[1]?.petName || 'Match 2']: top3Recommended[1]?.dimensionScores?.activity || top3Recommended[1]?.matchScore || 78 } : {}),
+      ...(top3Recommended[2] ? { [top3Recommended[2]?.petName || 'Match 3']: top3Recommended[2]?.dimensionScores?.activity || top3Recommended[2]?.matchScore || 74 } : {})
+    },
+    {
+      dimension: 'Overall Compatibility',
+      [top3Recommended[0]?.petName || 'Match 1']: top3Recommended[0]?.matchScore || 90,
+      ...(top3Recommended[1] ? { [top3Recommended[1]?.petName || 'Match 2']: top3Recommended[1]?.matchScore || 85 } : {}),
+      ...(top3Recommended[2] ? { [top3Recommended[2]?.petName || 'Match 3']: top3Recommended[2]?.matchScore || 80 } : {})
+    }
+  ];
+
+  // Readiness breakdown graph data
+  const readinessCategoryData = Object.entries(readiness.categoryBreakdown || {}).map(([key, score]) => {
+    const labelMap = {
+      time_availability: 'Time Availability',
+      financial_stability: 'Recurring Budget',
+      housing_stability: 'Housing Stability',
+      household_agreement: 'Household Agreement',
+      commitment_horizon: '10-15 Yr Horizon',
+      emergency_preparedness: 'Vet Emergency Buffer',
+      experience_readiness: 'Experience Level'
+    };
+    return {
+      category: labelMap[key] || key,
+      score: Number(score)
+    };
+  });
 
   // Cost chart data
   const chartData = costForecast
@@ -300,6 +438,300 @@ export default function ResultsPage() {
 
       </div>
 
+      {/* ─── TOP 3 RECOMMENDED ANIMAL MATCHES WITH GEMINI AI REASONING ─── */}
+      <section className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-sand-200">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-amber-400/15 text-brand-700 text-xs font-bold mb-1 border border-brand-500/30">
+              <Bot className="w-3.5 h-3.5 text-brand-600" />
+              <span>Gemini AI Reasoned Matches (Minimum 3 Guaranteed)</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-sand-900 tracking-tight flex items-center gap-2">
+              <span>Top 3 Certified Animal Recommendations</span>
+              <Sparkles className="w-5 h-5 text-amber-500" />
+            </h2>
+            <p className="text-xs sm:text-sm text-sand-800 mt-0.5">
+              Each recommendation is evaluated with AI reasoning for your {assessment.answers?.city || 'city'} apartment, heat resilience, and alone-time schedule.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 self-start sm:self-center">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>AI Evidence-Backed</span>
+          </div>
+        </div>
+
+        {/* 3 Prominent Featured Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {top3Recommended.map((item, idx) => {
+            const pet = item.pet || item;
+            const score = item.matchScore || 85;
+            const isNative = item.isNative || pet.is_native;
+            const rankLabel = idx === 0 ? '🏆 #1 Top Match' : idx === 1 ? '⭐ #2 Strong Match' : '✨ #3 Best Alternative';
+            const badgeColor = idx === 0 ? 'from-amber-500 to-orange-500 text-stone-950' : idx === 1 ? 'from-emerald-500 to-teal-500 text-white' : 'from-indigo-500 to-sky-500 text-white';
+
+            return (
+              <div
+                key={item.petId || item.pet?.id || idx}
+                className="bg-white rounded-3xl border-2 border-sand-200 hover:border-brand-400 shadow-card hover:shadow-hover transition-all duration-300 flex flex-col justify-between overflow-hidden relative group"
+              >
+                {/* Card Header & Rank Ribbon */}
+                <div className="p-6 space-y-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-1">
+                      <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-gradient-to-r ${badgeColor} shadow-sm`}>
+                        {rankLabel}
+                      </span>
+                      <h3 className="text-xl font-black text-sand-900 leading-snug group-hover:text-brand-600 transition-colors">
+                        {item.petName || pet.name}
+                      </h3>
+                      <div className="flex items-center gap-1.5 text-xs text-sand-800">
+                        <span className="capitalize font-semibold">{pet.species}</span>
+                        <span>•</span>
+                        <span>{pet.breed}</span>
+                        {isNative && (
+                          <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            Native Indie
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="text-center px-3 py-1.5 rounded-2xl bg-brand-50 border border-brand-200 flex-shrink-0">
+                      <span className="block text-lg font-black text-brand-600">{score}%</span>
+                      <span className="text-[9px] font-bold text-sand-800 uppercase tracking-wider">Match</span>
+                    </div>
+                  </div>
+
+                  {/* Gemini AI Personalized Reasoning Box */}
+                  <div className="bg-gradient-to-br from-amber-50/80 via-orange-50/50 to-amber-100/40 border border-amber-200/80 rounded-2xl p-3.5 space-y-2 text-xs">
+                    <div className="flex items-center justify-between text-amber-900 font-extrabold text-[11px]">
+                      <span className="flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                        <span>Gemini AI Compatibility Reasoning:</span>
+                      </span>
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-200/60 text-amber-950 font-semibold">
+                        {item.aiEngine || 'Gemini 3.5 Flash'}
+                      </span>
+                    </div>
+
+                    <p className="text-sand-900 text-xs leading-relaxed font-medium">
+                      {item.aiReasoning || `${item.petName || pet.name} is an exceptional match for your apartment routine. With high climate resilience and stable temperament, they thrive comfortably within your schedule.`}
+                    </p>
+
+                    {item.urbanLivingTip && (
+                      <div className="pt-1.5 border-t border-amber-200/60 text-[11px] text-amber-950">
+                        <span className="font-bold">🏙️ Apartment & Climate Tip: </span>
+                        <span>{item.urbanLivingTip}</span>
+                      </div>
+                    )}
+
+                    {item.dailyRoutine && (
+                      <div className="text-[11px] text-amber-950">
+                        <span className="font-bold">⏰ Daily Routine: </span>
+                        <span>{item.dailyRoutine}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Core Attribute Metrics */}
+                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                    <div className="bg-sand-50 p-2 rounded-xl border border-sand-100">
+                      <span className="block text-[10px] text-sand-800">Space Fit</span>
+                      <span className="font-black text-sand-900">{item.dimensionScores?.space || 85}%</span>
+                    </div>
+                    <div className="bg-sand-50 p-2 rounded-xl border border-sand-100">
+                      <span className="block text-[10px] text-sand-800">Climate Heat</span>
+                      <span className="font-black text-emerald-700">{pet.heat_tolerance || 4}/5</span>
+                    </div>
+                    <div className="bg-sand-50 p-2 rounded-xl border border-sand-100">
+                      <span className="block text-[10px] text-sand-800">Max Alone</span>
+                      <span className="font-black text-sand-900">{pet.max_alone_hours || 6} hrs</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card Action Buttons */}
+                <div className="p-4 bg-sand-50 border-t border-sand-200 flex items-center justify-between gap-2 text-xs">
+                  <button
+                    onClick={() => toggleCompare(item)}
+                    className={`px-3 py-1.5 rounded-lg border font-semibold transition-colors ${
+                      comparePets.some((p) => (p.petId || p.pet?.id) === (item.petId || pet.id))
+                        ? 'bg-sand-900 text-white border-sand-900'
+                        : 'bg-white text-sand-800 border-sand-300 hover:bg-sand-100'
+                    }`}
+                  >
+                    {comparePets.some((p) => (p.petId || p.pet?.id) === (item.petId || pet.id)) ? 'Comparing' : '+ Compare'}
+                  </button>
+
+                  <Link
+                    to={`/pets/${pet.slug || item.petSlug}`}
+                    className="px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-bold transition-colors flex items-center gap-1"
+                  >
+                    <span>Care Guide</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ─── GRAPH DIAGRAMS DASHBOARD ─── */}
+      <section className="bg-white rounded-3xl p-6 sm:p-8 border border-sand-200 shadow-card space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-sand-200">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold mb-1 border border-indigo-200">
+              <BarChart3 className="w-3.5 h-3.5" />
+              <span>Comparative Analytics & Visual Models</span>
+            </div>
+            <h3 className="text-2xl font-black text-sand-900 flex items-center gap-2">
+              <span>Interactive Compatibility & Financial Diagrams</span>
+            </h3>
+            <p className="text-xs text-sand-800 mt-0.5">
+              Evaluate multi-animal trade-offs, lifestyle capacity, and multi-year Indian cost curves visually.
+            </p>
+          </div>
+
+          {/* Diagram Tab Switcher */}
+          <div className="flex items-center gap-1 bg-sand-100 p-1 rounded-xl self-start sm:self-center">
+            <button
+              onClick={() => setActiveDiagramTab('comparison')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                activeDiagramTab === 'comparison'
+                  ? 'bg-white text-sand-900 shadow-sm'
+                  : 'text-sand-800 hover:text-sand-900'
+              }`}
+            >
+              Top 3 Comparison
+            </button>
+            <button
+              onClick={() => setActiveDiagramTab('readiness')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                activeDiagramTab === 'readiness'
+                  ? 'bg-white text-sand-900 shadow-sm'
+                  : 'text-sand-800 hover:text-sand-900'
+              }`}
+            >
+              Readiness Breakdown
+            </button>
+            <button
+              onClick={() => setActiveDiagramTab('costs')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                activeDiagramTab === 'costs'
+                  ? 'bg-white text-sand-900 shadow-sm'
+                  : 'text-sand-800 hover:text-sand-900'
+              }`}
+            >
+              5-Year Projection
+            </button>
+          </div>
+        </div>
+
+        {/* Diagram View 1: Top 3 Dimension Grouped Bar Chart */}
+        {activeDiagramTab === 'comparison' && (
+          <div className="space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-sand-800">
+              <span className="font-semibold">
+                Side-by-Side Dimension Scores (%) for your top recommended matches:
+              </span>
+              <span className="text-[11px] text-sand-600">
+                Orange: {top3Recommended[0]?.petName} • Green: {top3Recommended[1]?.petName} • Indigo: {top3Recommended[2]?.petName}
+              </span>
+            </div>
+
+            <div className="h-80 w-full pt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={top3ComparisonData} margin={{ top: 10, right: 10, left: -10, bottom: 25 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0e9df" />
+                  <XAxis dataKey="dimension" tick={{ fontSize: 11, fill: '#4a3e35' }} interval={0} />
+                  <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 11, fill: '#4a3e35' }} />
+                  <Tooltip
+                    formatter={(val, name) => [`${val}%`, name]}
+                    contentStyle={{ borderRadius: '12px', border: '1px solid #e8dbca', fontSize: '12px' }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                  <Bar dataKey={top3Recommended[0]?.petName || 'Match 1'} fill="#f97316" radius={[6, 6, 0, 0]} />
+                  {top3Recommended[1] && (
+                    <Bar dataKey={top3Recommended[1]?.petName || 'Match 2'} fill="#10b981" radius={[6, 6, 0, 0]} />
+                  )}
+                  {top3Recommended[2] && (
+                    <Bar dataKey={top3Recommended[2]?.petName || 'Match 3'} fill="#6366f1" radius={[6, 6, 0, 0]} />
+                  )}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {/* Diagram View 2: Lifestyle Readiness Category Breakdown */}
+        {activeDiagramTab === 'readiness' && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-xs text-sand-800">
+              <span className="font-semibold">Your Readiness Scores Across 7 Urban Life Dimensions:</span>
+              <span className="text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                Benchmark: ≥70% is Adoption-Ready
+              </span>
+            </div>
+
+            <div className="h-80 w-full pt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={readinessCategoryData}
+                  layout="vertical"
+                  margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0e9df" />
+                  <XAxis type="number" domain={[0, 100]} unit="%" tick={{ fontSize: 11, fill: '#4a3e35' }} />
+                  <YAxis type="category" dataKey="category" width={140} tick={{ fontSize: 11, fill: '#4a3e35' }} />
+                  <Tooltip
+                    formatter={(val) => [`${val}%`, 'Readiness Score']}
+                    contentStyle={{ borderRadius: '12px', border: '1px solid #e8dbca', fontSize: '12px' }}
+                  />
+                  <Bar dataKey="score" radius={[0, 8, 8, 0]}>
+                    {readinessCategoryData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.score >= 75 ? '#10b981' : entry.score >= 50 ? '#f59e0b' : '#ef4444'}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {/* Diagram View 3: 5-Year Cumulative Financial Progression */}
+        {activeDiagramTab === 'costs' && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-xs text-sand-800">
+              <span className="font-semibold">
+                Projected Ownership Financial Trajectory in {selectedCity} (INR):
+              </span>
+              <span className="text-brand-600 font-bold">
+                Upfront Adoption vs 1-Year vs 5-Year Cumulative Outlay
+              </span>
+            </div>
+
+            <div className="h-80 w-full pt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0e9df" />
+                  <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#4a3e35' }} />
+                  <YAxis tick={{ fontSize: 11, fill: '#4a3e35' }} tickFormatter={(val) => `₹${val / 1000}k`} />
+                  <Tooltip
+                    formatter={(value) => [`₹${value.toLocaleString('en-IN')}`, 'Projected Cost']}
+                    contentStyle={{ borderRadius: '12px', border: '1px solid #e8dbca', fontSize: '12px' }}
+                  />
+                  <Bar dataKey="amount" fill="#f97316" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+      </section>
+
       {/* Floating Compare Action Bar (when pets selected) */}
       {comparePets.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-sand-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4">
@@ -434,7 +866,115 @@ export default function ResultsPage() {
           </section>
         )}
 
+        {/* Feature B: Reusable Partner Recommendations for Match Results */}
+        <div className="pt-4 border-t border-sand-200">
+          <PartnerRecommendations
+            category="food,grooming,insurance,crates,training"
+            petType={assessment?.answers?.preferredSpecies || 'dog'}
+            budget={assessment?.answers?.monthlyBudget > 8000 ? 'high' : 'moderate'}
+            firstTimeOwner={assessment?.answers?.experienceLevel === 'first_time'}
+            title="Recommended Essentials For Your Matches"
+            subtitle="Carefully vetted Indian pet care brands, trainers, and insurance tailored to your lifestyle profile."
+            sourcePage={`quiz_results_${id}`}
+          />
+        </div>
+
       </div>
+
+      {/* Feature E: Readiness Remediation Roadmap (Free Preview / Premium Unlocked) */}
+      <section className="bg-white rounded-3xl p-6 sm:p-8 border border-sand-200 shadow-card space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-sand-200 pb-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-bold uppercase tracking-wider text-brand-600">Actionable Transition Plan</span>
+              {isPremium ? (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                  <Unlock className="w-3 h-3" /> Premium Unlocked
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-sand-200 text-sand-700">
+                  <Lock className="w-3 h-3" /> Premium Feature
+                </span>
+              )}
+            </div>
+            <h3 className="text-2xl font-black text-sand-900">4-Week Readiness Remediation Roadmap</h3>
+            <p className="text-xs text-sand-800 mt-0.5">
+              Targeted step-by-step milestones to raise your readiness score from {readiness.overallScore}% to 95%+ before bringing a dog home.
+            </p>
+          </div>
+          {isPremium ? (
+            <button
+              onClick={handleSaveRoadmap}
+              disabled={savingRoadmap}
+              className="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-soft transition-colors flex items-center gap-1.5 self-start sm:self-center"
+            >
+              {savingRoadmap ? 'Saving...' : roadmapSaved ? '✓ Progress Saved!' : 'Save Progress'}
+            </button>
+          ) : (
+            <Link
+              to="/pricing"
+              className="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-soft transition-colors flex items-center gap-1.5 self-start sm:self-center"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Unlock Full Roadmap</span>
+            </Link>
+          )}
+        </div>
+
+        {isPremium ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {roadmapSteps.map((step) => (
+              <div
+                key={step.id}
+                onClick={() => handleToggleRoadmapStep(step.id)}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-3.5 ${
+                  step.done
+                    ? 'bg-emerald-50/50 border-emerald-200 text-emerald-950'
+                    : 'bg-sand-50/60 border-sand-200 hover:border-brand-300'
+                }`}
+              >
+                <div className={`mt-0.5 w-5 h-5 rounded-lg border flex items-center justify-center flex-shrink-0 transition-colors ${
+                  step.done ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-sand-400 bg-white'
+                }`}>
+                  {step.done && <CheckCircle2 className="w-3.5 h-3.5" />}
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-sand-200 text-sand-800">
+                      {step.week}
+                    </span>
+                    <h4 className={`text-sm font-bold ${step.done ? 'line-through text-sand-800' : 'text-sand-900'}`}>
+                      {step.title}
+                    </h4>
+                  </div>
+                  <p className="text-xs text-sand-800 leading-relaxed">{step.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="relative rounded-2xl border border-sand-200 bg-sand-50/50 p-6 sm:p-8 text-center space-y-4 overflow-hidden">
+            <div className="max-w-md mx-auto space-y-2">
+              <div className="w-10 h-10 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center mx-auto">
+                <Lock className="w-5 h-5" />
+              </div>
+              <h4 className="text-lg font-black text-sand-900">Customized 4-Week Remediation Roadmap</h4>
+              <p className="text-xs text-sand-800 leading-relaxed">
+                Includes specific apartment pet-proofing checklists, landlord NOC legal templates, urban vet buffers, and scheduled walking calibration for your exact Indian city.
+              </p>
+              <div className="pt-2">
+                <Link
+                  to="/pricing"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-soft transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Upgrade to Premium (₹299/mo)</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* 3. "Why Not Shown" Deal-Breaker Panel */}
       <div className="bg-sand-100/70 rounded-3xl p-6 sm:p-8 border border-sand-200 space-y-4">
@@ -595,6 +1135,174 @@ export default function ResultsPage() {
           </div>
         ) : (
           <div className="py-8 text-center text-xs text-sand-800">Loading cost forecast...</div>
+        )}
+
+        {/* Feature B: Recommended Partners on Cost Forecaster */}
+        <div className="pt-6 border-t border-sand-200">
+          <PartnerRecommendations
+            category="insurance,vet,food"
+            petType={assessment?.answers?.preferredSpecies || 'dog'}
+            title="Affordable Healthcare & Food Partners"
+            subtitle="Keep recurring ownership expenses predictable with trusted pet medical insurance and nutritional subscriptions."
+            sourcePage={`cost_forecaster_${id}`}
+          />
+        </div>
+      </section>
+
+      {/* Feature E: Personalised Cost Plan (Free Preview / Premium Unlocked) */}
+      <section className="bg-white rounded-3xl p-6 sm:p-8 border border-sand-200 shadow-card space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-sand-200 pb-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">Financial Customization</span>
+              {isPremium ? (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                  <Unlock className="w-3 h-3" /> Premium Unlocked
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-sand-200 text-sand-700">
+                  <Lock className="w-3 h-3" /> Premium Feature
+                </span>
+              )}
+            </div>
+            <h3 className="text-2xl font-black text-sand-900">Personalised Cost Plan & Optimizer</h3>
+            <p className="text-xs text-sand-800 mt-0.5">
+              Customize your monthly nutrition tier, vet insurance buffers, and grooming frequency for {selectedCostPet?.pet?.name || 'your chosen companion'}.
+            </p>
+          </div>
+
+          {isPremium ? (
+            <button
+              onClick={handleSaveCostPlan}
+              disabled={savingPlan}
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-soft transition-colors flex items-center gap-1.5 self-start sm:self-center"
+            >
+              {savingPlan ? 'Saving...' : planSaved ? '✓ Plan Saved!' : 'Save Personalised Plan'}
+            </button>
+          ) : (
+            <Link
+              to="/pricing"
+              className="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-soft transition-colors flex items-center gap-1.5 self-start sm:self-center"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Unlock Custom Plan</span>
+            </Link>
+          )}
+        </div>
+
+        {isPremium ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between text-xs font-bold text-sand-900 mb-1">
+                  <span>Monthly Nutrition & Food</span>
+                  <span className="text-brand-600">₹{customMonthlyFood.toLocaleString('en-IN')}/mo</span>
+                </div>
+                <input
+                  type="range"
+                  min="1200"
+                  max="7000"
+                  step="100"
+                  value={customMonthlyFood}
+                  onChange={(e) => setCustomMonthlyFood(Number(e.target.value))}
+                  className="w-full accent-brand-500"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs font-bold text-sand-900 mb-1">
+                  <span>Monthly Grooming & Parasite Care</span>
+                  <span className="text-brand-600">₹{customMonthlyGrooming.toLocaleString('en-IN')}/mo</span>
+                </div>
+                <input
+                  type="range"
+                  min="400"
+                  max="3000"
+                  step="100"
+                  value={customMonthlyGrooming}
+                  onChange={(e) => setCustomMonthlyGrooming(Number(e.target.value))}
+                  className="w-full accent-brand-500"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs font-bold text-sand-900 mb-1">
+                  <span>Pet Health & Accident Insurance</span>
+                  <span className="text-brand-600">₹{customMonthlyInsurance.toLocaleString('en-IN')}/mo</span>
+                </div>
+                <input
+                  type="range"
+                  min="300"
+                  max="2500"
+                  step="50"
+                  value={customMonthlyInsurance}
+                  onChange={(e) => setCustomMonthlyInsurance(Number(e.target.value))}
+                  className="w-full accent-brand-500"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs font-bold text-sand-900 mb-1">
+                  <span>Routine Vet & Dental Buffer</span>
+                  <span className="text-brand-600">₹{customMonthlyVet.toLocaleString('en-IN')}/mo</span>
+                </div>
+                <input
+                  type="range"
+                  min="400"
+                  max="2500"
+                  step="50"
+                  value={customMonthlyVet}
+                  onChange={(e) => setCustomMonthlyVet(Number(e.target.value))}
+                  className="w-full accent-brand-500"
+                />
+              </div>
+            </div>
+
+            <div className="bg-sand-50/80 p-6 rounded-2xl border border-sand-200 space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-sand-800">Customized Annual Budget Summary</h4>
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between py-1 border-b border-sand-200">
+                  <span className="text-sand-800">Total Monthly Recurring</span>
+                  <span className="font-extrabold text-sand-900">
+                    ₹{(customMonthlyFood + customMonthlyGrooming + customMonthlyInsurance + customMonthlyVet).toLocaleString('en-IN')}/mo
+                  </span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-sand-200">
+                  <span className="text-sand-800">1-Year Recurring Expense</span>
+                  <span className="font-extrabold text-sand-900">
+                    ₹{((customMonthlyFood + customMonthlyGrooming + customMonthlyInsurance + customMonthlyVet) * 12).toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <div className="flex justify-between pt-2 text-sm font-black text-emerald-800">
+                  <span>1-Year All-Inclusive Total</span>
+                  <span>
+                    ₹{((costForecast?.upfront?.totalUpfront || 5000) + (customMonthlyFood + customMonthlyGrooming + customMonthlyInsurance + customMonthlyVet) * 12).toLocaleString('en-IN')}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="relative rounded-2xl border border-sand-200 bg-sand-50/50 p-6 sm:p-8 text-center space-y-4 overflow-hidden">
+            <div className="max-w-md mx-auto space-y-2">
+              <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
+                <Lock className="w-5 h-5" />
+              </div>
+              <h4 className="text-lg font-black text-sand-900">Personalised Cost Plan & Budget Optimizer</h4>
+              <p className="text-xs text-sand-800 leading-relaxed">
+                Fine-tune insurance deductibles, compare wet food vs kibble monthly outlays, and forecast your household pet budget across 5 years.
+              </p>
+              <div className="pt-2">
+                <Link
+                  to="/pricing"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-soft transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Unlock Personalised Cost Plan (₹299/mo)</span>
+                </Link>
+              </div>
+            </div>
+          </div>
         )}
       </section>
 

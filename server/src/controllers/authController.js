@@ -6,7 +6,14 @@ import { signToken, signGuestToken } from '../middleware/auth.js';
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters')
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  role: z.enum(['adopter', 'shelter']).default('adopter'),
+  shelterName: z.string().optional(),
+  city: z.string().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  website: z.string().optional(),
+  description: z.string().optional()
 });
 
 const loginSchema = z.object({
@@ -21,7 +28,7 @@ export async function register(req, res) {
       return res.status(400).json({ error: parsed.error.errors[0].message });
     }
 
-    const { name, email, password } = parsed.data;
+    const { name, email, password, role = 'adopter', shelterName, city, phone, address, website, description } = parsed.data;
     const db = getDb();
 
     // Check existing
@@ -32,7 +39,6 @@ export async function register(req, res) {
 
     const id = 'usr_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
     const passwordHash = await bcrypt.hash(password, 10);
-    const role = 'adopter';
 
     const insertResult = await db.query(
       `INSERT INTO users (id, email, password_hash, role, name)
@@ -42,6 +48,27 @@ export async function register(req, res) {
     );
 
     const newUser = insertResult.rows[0];
+
+    // If shelter role, create corresponding shelter profile (unverified by default until admin review)
+    let shelterProfile = null;
+    if (role === 'shelter') {
+      const shelterId = 'sh_' + Math.random().toString(36).substr(2, 9);
+      const shName = shelterName || name;
+      const shCity = city || 'Mumbai';
+      const shPhone = phone || '+91 98000 00000';
+      const shAddress = address || 'Registered Rescue Facility';
+      const shDesc = description || 'Dedicated animal shelter and foster sanctuary';
+      const shWebsite = website || '';
+
+      const shResult = await db.query(
+        `INSERT INTO shelters (id, user_id, name, city, address, phone, email, website, description, verified, is_featured, plan_name)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+         RETURNING *`,
+        [shelterId, newUser.id, shName, shCity, shAddress, shPhone, email, shWebsite, shDesc, false, false, 'Free']
+      );
+      shelterProfile = shResult.rows && shResult.rows[0];
+    }
+
     const token = signToken(newUser);
 
     return res.status(201).json({
@@ -51,7 +78,8 @@ export async function register(req, res) {
         id: newUser.id,
         email: newUser.email,
         role: newUser.role,
-        name: newUser.name
+        name: newUser.name,
+        shelter: shelterProfile
       }
     });
   } catch (err) {
@@ -83,6 +111,18 @@ export async function login(req, res) {
 
     const token = signToken(user);
 
+    let shelterProfile = null;
+    if (user.role === 'shelter') {
+      const shRes = await db.query('SELECT * FROM shelters WHERE user_id = $1', [user.id]);
+      if (shRes.rows && shRes.rows.length > 0) {
+        shelterProfile = shRes.rows[0];
+      }
+    }
+
+    // Check active subscription
+    const subRes = await db.query('SELECT * FROM subscriptions WHERE user_id = $1 AND status = $2', [user.id, 'active']);
+    const subscription = subRes.rows && subRes.rows[0] ? subRes.rows[0] : null;
+
     return res.json({
       message: 'Logged in successfully',
       token,
@@ -90,7 +130,9 @@ export async function login(req, res) {
         id: user.id,
         email: user.email,
         role: user.role,
-        name: user.name
+        name: user.name,
+        shelter: shelterProfile,
+        isPremium: Boolean(subscription && subscription.plan_tier === 'premium')
       }
     });
   } catch (err) {
@@ -103,7 +145,25 @@ export async function getMe(req, res) {
   if (!req.user) {
     return res.status(401).json({ error: 'Not authenticated' });
   }
-  return res.json({ user: req.user });
+  const db = getDb();
+  let shelterProfile = null;
+  if (req.user.role === 'shelter') {
+    const shRes = await db.query('SELECT * FROM shelters WHERE user_id = $1', [req.user.id]);
+    if (shRes.rows && shRes.rows.length > 0) {
+      shelterProfile = shRes.rows[0];
+    }
+  }
+
+  const subRes = await db.query('SELECT * FROM subscriptions WHERE user_id = $1 AND status = $2', [req.user.id, 'active']);
+  const subscription = subRes.rows && subRes.rows[0] ? subRes.rows[0] : null;
+
+  return res.json({
+    user: {
+      ...req.user,
+      shelter: shelterProfile,
+      isPremium: Boolean(subscription && subscription.plan_tier === 'premium')
+    }
+  });
 }
 
 export async function createGuestToken(req, res) {

@@ -1,0 +1,45 @@
+{
+  "_metadata": {
+    "notice": "ESTIMATE ONLY - Common companion animal health risks and breed predispositions for verification.",
+    "version": "1.0",
+    "updated": "2026-10-28"
+  },
+  "health_conditions": [
+    {
+      "name": "Brachycephalic Obstructive Airway Syndrome (BOAS)",
+      "description": "Upper airway abnormalities in flat-faced breeds causing breathing distress, exercise intolerance, and severe heat vulnerability.",
+      "severity": "high",
+      "breed_slugs": ["pug", "shih-tzu", "persian-cat"]
+    },
+    {
+      "name": "Canine Hip Dysplasia (CHD)",
+      "description": "Malformation of the hip ball-and-socket joint leading to arthritis and pain, common in heavy, fast-growing breeds.",
+      "severity": "medium",
+      "breed_slugs": ["german-shepherd", "golden-retriever", "labrador-retriever", "gaddi-kutta"]
+    },
+    {
+      "name": "Tropical Heatstroke Vulnerability",
+      "description": "Elevated sensitivity to core body temperature elevation above 41°C during hot, humid Indian weather.",
+      "severity": "critical",
+      "breed_slugs": ["pug", "gaddi-kutta", "bakharwal-dog", "persian-cat", "golden-retriever"]
+    },
+    {
+      "name": "Canine Tick-Borne Fever (Ehrlichia / Babesia)",
+      "description": "Tick-transmitted hemoparasitic infections causing acute thrombocytopenia, high fever, and lethargy.",
+      "severity": "high",
+      "breed_slugs": ["german-shepherd", "labrador-retriever", "golden-retriever", "beagle"]
+    },
+    {
+      "name": "Progressive Retinal Atrophy (PRA)",
+      "description": "Bilateral degeneration of the retina leading to progressive vision impairment and night blindness.",
+      "severity": "medium",
+      "breed_slugs": ["beagle", "labrador-retriever"]
+    },
+    {
+      "name": "Feline Lower Urinary Tract Disease (FLUTD)",
+      "description": "Urethral obstruction and bladder inflammation prevalent in indoor cats with low hydration.",
+      "severity": "high",
+      "breed_slugs": ["persian-cat", "british-shorthair", "siamese-cat"]
+    }
+  ]
+}

@@ -18,7 +18,16 @@ class InMemoryDB {
       vets: [],
       assessments: [],
       foster_trials: [],
-      onboarding_progress: []
+      onboarding_progress: [],
+      partners: [],
+      shelter_plans: [],
+      inquiries: [],
+      trial_bookings: [],
+      payments: [],
+      subscriptions: [],
+      service_providers: [],
+      leads: [],
+      partner_inquiries: []
     };
   }
 
@@ -38,26 +47,65 @@ class InMemoryDB {
       const table = matchFrom[1].toLowerCase();
       let rows = [...(this.tables[table] || [])];
 
-      // Simple WHERE handlers
-      if (/WHERE\s+email\s*=\s*\$1/i.test(trimmed)) {
-        rows = rows.filter(r => r.email?.toLowerCase() === params[0]?.toLowerCase());
-      } else if (/WHERE\s+id\s*=\s*\$1/i.test(trimmed)) {
-        rows = rows.filter(r => r.id === params[0]);
-      } else if (/WHERE\s+slug\s*=\s*\$1/i.test(trimmed)) {
-        rows = rows.filter(r => r.slug === params[0]);
-      } else if (/WHERE\s+user_id\s*=\s*\$1/i.test(trimmed)) {
-        rows = rows.filter(r => r.user_id === params[0]);
-      } else if (/WHERE\s+guest_token\s*=\s*\$1/i.test(trimmed)) {
-        rows = rows.filter(r => r.guest_token === params[0]);
-      } else if (/WHERE\s+city\s*=\s*\$1/i.test(trimmed) || /WHERE\s+LOWER\(city\)\s*=\s*LOWER\(\$1\)/i.test(trimmed)) {
-        rows = rows.filter(r => r.city?.toLowerCase() === params[0]?.toLowerCase());
+      // Flexible WHERE parser for mock development mode
+      const whereMatch = trimmed.match(/WHERE\s+(.+?)(?:\s+ORDER\s+BY|\s+LIMIT|$)/i);
+      if (whereMatch) {
+        const whereClause = whereMatch[1];
+        const conditions = whereClause.split(/\s+AND\s+/i);
+
+        rows = rows.filter(r => {
+          return conditions.every(cond => {
+            const trimmedCond = cond.trim().replace(/^\(|\)$/g, '');
+
+            // active = true / active = false
+            if (/active\s*=\s*true/i.test(trimmedCond)) return r.active === true;
+            if (/active\s*=\s*false/i.test(trimmedCond)) return r.active === false;
+
+            // LOWER(col) = LOWER($X) or col = $X
+            const paramMatch = trimmedCond.match(/(?:LOWER\()?([a-zA-Z_]+)(?:\))?\s*=\s*(?:LOWER\()?\$([0-9]+)(?:\))?/i);
+            if (paramMatch) {
+              const col = paramMatch[1].toLowerCase();
+              const pIdx = parseInt(paramMatch[2], 10) - 1;
+              const expected = params[pIdx];
+              if (expected === undefined || expected === null) return true;
+              if (typeof expected === 'string' && typeof r[col] === 'string') {
+                return r[col].toLowerCase() === expected.toLowerCase();
+              }
+              return r[col] == expected;
+            }
+
+            // col = 'literal'
+            const literalMatch = trimmedCond.match(/([a-zA-Z_]+)\s*=\s*'([^']+)'/i);
+            if (literalMatch) {
+              const col = literalMatch[1].toLowerCase();
+              const literal = literalMatch[2];
+              return String(r[col]).toLowerCase() === literal.toLowerCase();
+            }
+
+            return true;
+          });
+        });
       }
 
-      // ORDER BY / LIMIT
+      // ORDER BY support (e.g. is_featured DESC, created_at DESC)
+      if (/ORDER\s+BY/i.test(trimmed)) {
+        if (/is_featured\s+DESC/i.test(trimmed)) {
+          rows.sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0));
+        } else if (/created_at\s+DESC/i.test(trimmed)) {
+          rows.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+        }
+      }
+
+      // LIMIT
       if (/LIMIT\s+\$([0-9]+)/i.test(trimmed)) {
         const limitParamIndex = parseInt(trimmed.match(/LIMIT\s+\$([0-9]+)/i)[1], 10) - 1;
         const limit = params[limitParamIndex] || 100;
         rows = rows.slice(0, limit);
+      } else {
+        const directLimit = trimmed.match(/LIMIT\s+([0-9]+)/i);
+        if (directLimit) {
+          rows = rows.slice(0, parseInt(directLimit[1], 10));
+        }
       }
 
       return { rows };

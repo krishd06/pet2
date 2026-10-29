@@ -2,15 +2,23 @@
   "name": "pawmatch-root",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "PawMatch India - Full-stack pet compatibility and adoption platform",
   "scripts": {
     "dev": "concurrently -n \"SERVER,CLIENT\" -c \"blue,green\" \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "dev:client": "npm run dev --prefix client",
     "dev:server": "npm run dev --prefix server",
     "build": "npm run build --prefix client",
-    "start": "npm run start --prefix server"
+    "start": "npm run start --prefix server",
+    "seed:supabase": "node supabase/seed/seed.js",
+    "import:owner-data": "node supabase/seed/generate_import_sql.js",
+    "test:parser": "node --test server/src/tests/researchParser.test.js"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "dotenv": "^18.0.9"
   }
 }

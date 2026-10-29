@@ -21,7 +21,7 @@ import {
 export default function AdoptableAnimalsPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { guestToken } = useAuth();
+  const { user, guestToken } = useAuth();
 
   const [animals, setAnimals] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +38,41 @@ export default function AdoptableAnimalsPage() {
 
   // Modal for shelter direct outreach
   const [activeAnimalModal, setActiveAnimalModal] = useState(null);
+  const [inquiryForm, setInquiryForm] = useState({
+    adopterName: '',
+    adopterEmail: '',
+    adopterPhone: '',
+    message: ''
+  });
+  const [sendingInquiry, setSendingInquiry] = useState(false);
+  const [inquirySuccess, setInquirySuccess] = useState(false);
+
+  function handleOpenAnimal(anim) {
+    setActiveAnimalModal(anim);
+    setInquirySuccess(false);
+    setInquiryForm({
+      adopterName: user?.name || '',
+      adopterEmail: user?.email || '',
+      adopterPhone: '',
+      message: `Namaste! I would love to adopt ${anim.name}. Could we schedule a meet-and-greet?`
+    });
+    // Log view to MongoDB event store
+    api.recordPetView(anim.id).catch(() => {});
+  }
+
+  async function handleSendInquiry(e) {
+    e.preventDefault();
+    if (!activeAnimalModal) return;
+    setSendingInquiry(true);
+    try {
+      await api.submitPetInquiry(activeAnimalModal.id, inquiryForm);
+      setInquirySuccess(true);
+    } catch (err) {
+      alert('Failed to send inquiry: ' + err.message);
+    } finally {
+      setSendingInquiry(false);
+    }
+  }
 
   useEffect(() => {
     async function loadAnimals() {
@@ -195,6 +230,11 @@ export default function AdoptableAnimalsPage() {
                     loading="lazy"
                   />
                   <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                    {anim.is_featured && (
+                      <span className="bg-amber-400 text-amber-950 px-2 py-0.5 rounded-full text-[10px] font-black flex items-center gap-1 shadow-sm">
+                        <Sparkles className="w-3 h-3" /> Featured
+                      </span>
+                    )}
                     <span className="bg-sand-900/80 backdrop-blur-sm text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1">
                       <MapPin className="w-3 h-3 text-brand-400" />
                       {anim.city}
@@ -237,6 +277,11 @@ export default function AdoptableAnimalsPage() {
                     <div className="flex items-center gap-2 text-sand-800">
                       <span className="font-semibold">Shelter:</span>
                       <span className="text-sand-900 truncate">{anim.shelter_name || 'Verified Shelter'}</span>
+                      {anim.shelter_verified && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                          <ShieldCheck className="w-3 h-3" /> Verified
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-3 text-emerald-800 text-[11px] font-medium">
                       {anim.vaccinated && <span>✓ Vaccinated</span>}
@@ -248,7 +293,7 @@ export default function AdoptableAnimalsPage() {
                 {/* Card Action Buttons */}
                 <div className="p-4 bg-sand-50 border-t border-sand-200 flex items-center justify-between gap-2">
                   <button
-                    onClick={() => setActiveAnimalModal(anim)}
+                    onClick={() => handleOpenAnimal(anim)}
                     className="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-sand-100 border border-sand-300 text-sand-900 text-xs font-bold transition-colors text-center"
                   >
                     Contact Shelter
@@ -341,9 +386,62 @@ export default function AdoptableAnimalsPage() {
               )}
             </div>
 
-            <div className="bg-amber-50 p-3 rounded-xl border border-amber-100 text-[11px] text-amber-900 leading-relaxed">
-              <strong>Zero Application Workflow:</strong> Call or email the shelter directly to coordinate an in-person meeting or arrange a home visit.
-            </div>
+            {/* Inbound Direct Inquiry Form */}
+            {inquirySuccess ? (
+              <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 text-center space-y-1.5 animate-in fade-in">
+                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto text-sm font-bold">
+                  ✓
+                </div>
+                <h4 className="text-xs font-black text-emerald-950">Inquiry Sent to Shelter!</h4>
+                <p className="text-[11px] text-emerald-800 leading-relaxed">
+                  The shelter team will receive your contact details and message in their dashboard. You can also call them directly above.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleSendInquiry} className="space-y-2.5 bg-sand-50 p-4 rounded-2xl border border-sand-200 text-xs">
+                <span className="font-extrabold text-sand-900 block text-xs">Send Online Adoption Inquiry</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    required
+                    placeholder="Your Full Name"
+                    value={inquiryForm.adopterName}
+                    onChange={(e) => setInquiryForm({ ...inquiryForm, adopterName: e.target.value })}
+                    className="bg-white border border-sand-300 rounded-xl px-2.5 py-1.5 text-xs text-sand-900"
+                  />
+                  <input
+                    type="tel"
+                    required
+                    placeholder="Phone (WhatsApp)"
+                    value={inquiryForm.adopterPhone}
+                    onChange={(e) => setInquiryForm({ ...inquiryForm, adopterPhone: e.target.value })}
+                    className="bg-white border border-sand-300 rounded-xl px-2.5 py-1.5 text-xs text-sand-900"
+                  />
+                </div>
+                <input
+                  type="email"
+                  required
+                  placeholder="Your Email Address"
+                  value={inquiryForm.adopterEmail}
+                  onChange={(e) => setInquiryForm({ ...inquiryForm, adopterEmail: e.target.value })}
+                  className="w-full bg-white border border-sand-300 rounded-xl px-2.5 py-1.5 text-xs text-sand-900"
+                />
+                <textarea
+                  rows="2"
+                  required
+                  value={inquiryForm.message}
+                  onChange={(e) => setInquiryForm({ ...inquiryForm, message: e.target.value })}
+                  className="w-full bg-white border border-sand-300 rounded-xl px-2.5 py-1.5 text-xs text-sand-900"
+                />
+                <button
+                  type="submit"
+                  disabled={sendingInquiry}
+                  className="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-soft transition-colors"
+                >
+                  {sendingInquiry ? 'Sending...' : 'Send Inquiry to Shelter'}
+                </button>
+              </form>
+            )}
 
             <div className="flex gap-2">
               <button

@@ -1,0 +1,99 @@
+{
+  "_metadata": {
+    "notice": "ESTIMATE ONLY - 30-day onboarding milestones structured around the 3-3-3 rule for rescue adoptions in India.",
+    "version": "1.0",
+    "updated": "2026-10-28"
+  },
+  "tasks": [
+    {
+      "species_slug": "dog",
+      "day_from": 1,
+      "day_to": 3,
+      "title": "Establish Safe Zone & Quiet Decompression",
+      "description": "Set up a calm, quiet corner with bed, clean water, and chew toy. Do not invite guests or throw welcome parties; let your pet decompress.",
+      "category": "Environment",
+      "sort_order": 1
+    },
+    {
+      "species_slug": "dog",
+      "day_from": 2,
+      "day_to": 4,
+      "title": "Veterinary Health Assessment & Microchip Registration",
+      "description": "Visit a verified neighborhood clinic for baseline physical examination, deworming verification, and municipal pet license initiation.",
+      "category": "Health",
+      "sort_order": 2
+    },
+    {
+      "species_slug": "dog",
+      "day_from": 3,
+      "day_to": 7,
+      "title": "Predictable Feeding & Potty Schedule",
+      "description": "Take puppy or adult dog out every 3 hours and right after meals. Reward immediately with positive praise when they relieve outside.",
+      "category": "Routine",
+      "sort_order": 3
+    },
+    {
+      "species_slug": "dog",
+      "day_from": 7,
+      "day_to": 14,
+      "title": "Apartment Acclimatization & Elevator Training",
+      "description": "Introduce elevator sounds, corridor echoes, and society gate staff gently with high-value treats to prevent reactive barking.",
+      "category": "Socialization",
+      "sort_order": 4
+    },
+    {
+      "species_slug": "dog",
+      "day_from": 14,
+      "day_to": 21,
+      "title": "Separation Tolerance & Crate Comfort",
+      "description": "Practice leaving the apartment for 15, 30, and 60 minutes increments to build confidence and avoid separation distress.",
+      "category": "Training",
+      "sort_order": 5
+    },
+    {
+      "species_slug": "dog",
+      "day_from": 21,
+      "day_to": 30,
+      "title": "Long Leash Walks & Basic Recall Commands",
+      "description": "Solidify 'Sit', 'Stay', and 'Come' commands in quiet outdoor parks. Ensure double-clip harness for Indian street safety.",
+      "category": "Training",
+      "sort_order": 6
+    },
+    {
+      "species_slug": "cat",
+      "day_from": 1,
+      "day_to": 3,
+      "title": "Sanctuary Room Confinement",
+      "description": "Keep your new cat in a single quiet room with litter box, food, scratching post, and hiding hideout before whole-house access.",
+      "category": "Environment",
+      "sort_order": 7
+    },
+    {
+      "species_slug": "cat",
+      "day_from": 4,
+      "day_to": 10,
+      "title": "Balcony & Window Safety Net Inspection",
+      "description": "Verify high-density pigeon/safety netting across all balconies and sliding windows before expanding home territory.",
+      "category": "Safety",
+      "sort_order": 8
+    },
+    {
+      "species_slug": "cat",
+      "day_from": 11,
+      "day_to": 20,
+      "title": "Gradual Room-by-Room Home Exploration",
+      "description": "Open doors gradually during calm evening hours. Place vertical scratchers and pheromone diffusers along hallway paths.",
+      "category": "Routine",
+      "sort_order": 9
+    },
+    {
+      "species_slug": "cat",
+      "day_from": 21,
+      "day_to": 30,
+      "title": "Grooming Desensitization & Carrier Training",
+      "description": "Leave carrier open with blanket and treats so carrier is seen as a cozy nap spot rather than a vet trauma trigger.",
+      "category": "Care",
+      "sort_order": 10
+    }
+  ]
+}

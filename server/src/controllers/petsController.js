@@ -1,25 +1,30 @@
-import { getDb } from '../db/index.js';
 import { PetContent } from '../models/index.js';
+import { getAllBreedsData } from '../services/breedService.js';
 
 export async function getPets(req, res) {
   try {
-    const db = getDb();
     const { species, size, energy, budgetBand, isNative, apartmentFriendly, search } = req.query;
 
-    const result = await db.query('SELECT * FROM pets ORDER BY is_native DESC, name ASC');
-    let pets = result.rows || [];
+    let pets = await getAllBreedsData();
 
-    if (species) {
-      pets = pets.filter(p => p.species.toLowerCase() === species.toLowerCase());
+    if (species && species !== 'all') {
+      const sp = species.toLowerCase();
+      if (sp === 'rabbit' || sp === 'small_pet') {
+        pets = pets.filter(p => ['rabbit', 'guinea-pig', 'hamster', 'exotic-mammal', 'small_pet'].includes(p.species.toLowerCase()));
+      } else if (sp === 'fish' || sp === 'aquarium') {
+        pets = pets.filter(p => ['fish', 'turtle', 'reptile', 'aquatic'].includes(p.species.toLowerCase()));
+      } else {
+        pets = pets.filter(p => p.species.toLowerCase() === sp);
+      }
     }
-    if (size) {
+    if (size && size !== 'all') {
       pets = pets.filter(p => p.size.toLowerCase() === size.toLowerCase());
     }
-    if (energy) {
+    if (energy && energy !== 'all') {
       const e = parseInt(energy, 10);
       pets = pets.filter(p => p.energy_level === e);
     }
-    if (budgetBand) {
+    if (budgetBand && budgetBand !== 'all') {
       pets = pets.filter(p => p.budget_band.toLowerCase() === budgetBand.toLowerCase());
     }
     if (isNative !== undefined) {
@@ -30,9 +35,13 @@ export async function getPets(req, res) {
       const apt = apartmentFriendly === 'true' || apartmentFriendly === true;
       pets = pets.filter(p => Boolean(p.apartment_friendly) === apt);
     }
-    if (search) {
-      const q = search.toLowerCase();
-      pets = pets.filter(p => p.name.toLowerCase().includes(q) || p.breed.toLowerCase().includes(q));
+    if (search && search.trim()) {
+      const q = search.trim().toLowerCase();
+      pets = pets.filter(p => 
+        p.name.toLowerCase().includes(q) || 
+        (p.breed && p.breed.toLowerCase().includes(q)) ||
+        (p.species && p.species.toLowerCase().includes(q))
+      );
     }
 
     return res.json({ pets, total: pets.length });
@@ -45,17 +54,20 @@ export async function getPets(req, res) {
 export async function getPetBySlug(req, res) {
   try {
     const { slug } = req.params;
-    const db = getDb();
+    const allPets = await getAllBreedsData();
 
-    // 1. Fetch SQL attributes
-    const result = await db.query('SELECT * FROM pets WHERE slug = $1', [slug]);
-    if (!result.rows || result.rows.length === 0) {
+    const pet = allPets.find(p => p.slug === slug || p.slug === slug.toLowerCase());
+    if (!pet) {
       return res.status(404).json({ error: 'Pet profile not found' });
     }
-    const pet = result.rows[0];
 
-    // 2. Fetch rich Mongo content
-    const richContent = await PetContent.findOne({ petSlug: slug });
+    // Optional rich Mongo content if present
+    let richContent = null;
+    try {
+      richContent = await PetContent.findOne({ petSlug: slug });
+    } catch (e) {
+      // Non-blocking
+    }
 
     return res.json({
       pet: {

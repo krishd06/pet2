@@ -1,0 +1,21 @@
+{
+  "_metadata": {
+    "notice": "ESTIMATE ONLY - Regional classification based on urban infrastructure and pet friendliness indices.",
+    "version": "1.0",
+    "updated": "2026-10-28"
+  },
+  "cities": [
+    { "name": "Bengaluru", "state": "Karnataka", "tier": 1, "pet_friendly_score": 88 },
+    { "name": "Mumbai", "state": "Maharashtra", "tier": 1, "pet_friendly_score": 82 },
+    { "name": "Delhi NCR", "state": "Delhi", "tier": 1, "pet_friendly_score": 79 },
+    { "name": "Pune", "state": "Maharashtra", "tier": 1, "pet_friendly_score": 85 },
+    { "name": "Hyderabad", "state": "Telangana", "tier": 1, "pet_friendly_score": 80 },
+    { "name": "Chennai", "state": "Tamil Nadu", "tier": 1, "pet_friendly_score": 76 },
+    { "name": "Kolkata", "state": "West Bengal", "tier": 1, "pet_friendly_score": 74 },
+    { "name": "Ahmedabad", "state": "Gujarat", "tier": 2, "pet_friendly_score": 71 },
+    { "name": "Chandigarh", "state": "Punjab / Haryana", "tier": 2, "pet_friendly_score": 84 },
+    { "name": "Jaipur", "state": "Rajasthan", "tier": 2, "pet_friendly_score": 68 },
+    { "name": "Kochi", "state": "Kerala", "tier": 2, "pet_friendly_score": 78 },
+    { "name": "Dehradun", "state": "Uttarakhand", "tier": 3, "pet_friendly_score": 75 }
+  ]
+}

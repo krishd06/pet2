@@ -1,0 +1,109 @@
+{
+  "_metadata": {
+    "notice": "ESTIMATE ONLY - 10 placeholder local pet service providers for demonstration and verification.",
+    "version": "1.0",
+    "updated": "2026-10-28"
+  },
+  "service_providers": [
+    {
+      "name": "Dr. Prathap Rao's Crown Vet Clinic",
+      "category": "vet",
+      "city_name": "Bengaluru",
+      "phone": "+91 98450 11223",
+      "email": "info@crownvetblr.in",
+      "description": "24x7 emergency surgical center, digital X-ray, ultrasound, and dedicated feline ward in Indiranagar.",
+      "is_verified": true,
+      "is_active": true
+    },
+    {
+      "name": "Dr. Sneha Kulkarni Animal Care",
+      "category": "vet",
+      "city_name": "Mumbai",
+      "phone": "+91 98200 44556",
+      "email": "drsnehak@mumbaivet.org",
+      "description": "Expert small-animal dermatologist, orthopedic rehabilitation, and dental scaling clinic in Bandra West.",
+      "is_verified": true,
+      "is_active": true
+    },
+    {
+      "name": "Canine Karma Behavioral Academy",
+      "category": "trainer",
+      "city_name": "Bengaluru",
+      "phone": "+91 99001 22334",
+      "email": "train@caninekarma.in",
+      "description": "Certified positive reinforcement dog trainers specializing in leash reactivity and rescue dog rehabilitation.",
+      "is_verified": true,
+      "is_active": true
+    },
+    {
+      "name": "Urban Paws Training Studio",
+      "category": "trainer",
+      "city_name": "Delhi NCR",
+      "phone": "+91 98111 88990",
+      "email": "contact@urbanpawsdli.com",
+      "description": "Apartment puppy manners, separation anxiety coaching, and recall training in South Delhi.",
+      "is_verified": true,
+      "is_active": true
+    },
+    {
+      "name": "The Velvet Paw Grooming Spa",
+      "category": "groomer",
+      "city_name": "Pune",
+      "phone": "+91 97660 33445",
+      "email": "spapune@velvetpaw.in",
+      "description": "Hydrotherapy deshedding baths, medicated ozone dips, tick treatments, and breed-standard haircuts in Koregaon Park.",
+      "is_verified": true,
+      "is_active": true
+    },
+    {
+      "name": "Pooch & Co. Mobile Grooming Van",
+      "category": "groomer",
+      "city_name": "Mumbai",
+      "phone": "+91 98333 77889",
+      "email": "van@poochandco.in",
+      "description": "Air-conditioned grooming salon at your apartment building doorstep across Powai and Andheri.",
+      "is_verified": true,
+      "is_active": true
+    },
+    {
+      "name": "Cozy Tails In-Home Pet Sitting",
+      "category": "sitter",
+      "city_name": "Bengaluru",
+      "phone": "+91 99450 66778",
+      "email": "sitting@cozytailsblr.com",
+      "description": "Background-verified feline drop-in sitters and dedicated overnight dog walking companions in Koramangala.",
+      "is_verified": true,
+      "is_active": true
+    },
+    {
+      "name": "Happy Paws Daycare & Foster Haven",
+      "category": "sitter",
+      "city_name": "Hyderabad",
+      "phone": "+91 98490 55667",
+      "email": "host@happypawshyd.com",
+      "description": "Spacious lawn home boarding with daily photo updates and supervised socialization in Gachibowli.",
+      "is_verified": true,
+      "is_active": true
+    },
+    {
+      "name": "Dr. Arun's Pet Lifeline Hospital",
+      "category": "vet",
+      "city_name": "Chennai",
+      "phone": "+91 94440 22119",
+      "email": "lifeline@chennaivet.in",
+      "description": "Full blood panel analyzers, in-house pharmacy, and senior pet geriatric care programs in Adyar.",
+      "is_verified": true,
+      "is_active": true
+    },
+    {
+      "name": "Good Boy Academy Canine Sports",
+      "category": "trainer",
+      "city_name": "Pune",
+      "phone": "+91 98220 99881",
+      "email": "coach@goodboypune.in",
+      "description": "Agility park obstacle training, clicker foundations, and social walk bootcamps in Baner.",
+      "is_verified": true,
+      "is_active": true
+    }
+  ]
+}

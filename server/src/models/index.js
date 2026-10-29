@@ -79,6 +79,70 @@ const AdvisorConversationSchema = new mongoose.Schema({
   }]
 }, { timestamps: true });
 
+// Event Tracking & Analytics Schemas (MongoDB Atlas)
+const ClickEventSchema = new mongoose.Schema({
+  partnerId: { type: String, required: true },
+  sourcePage: { type: String, default: 'unknown' },
+  sessionId: { type: String, default: 'anonymous' },
+  timestamp: { type: Date, default: Date.now }
+}, { timestamps: true });
+
+const PetViewEventSchema = new mongoose.Schema({
+  animalId: { type: String, required: true },
+  shelterId: { type: String },
+  sessionId: { type: String, default: 'anonymous' },
+  timestamp: { type: Date, default: Date.now }
+}, { timestamps: true });
+
+const QuizSnapshotSchema = new mongoose.Schema({
+  consented: { type: Boolean, default: true },
+  speciesPreference: String,
+  city: String,
+  homeType: String,
+  readinessBand: String,
+  topPetSlug: String,
+  matchScore: Number,
+  timestamp: { type: Date, default: Date.now }
+}, { timestamps: true });
+
+// Premium User Data Schemas (MongoDB Atlas)
+const RoadmapSchema = new mongoose.Schema({
+  userId: { type: String, required: true },
+  petId: String,
+  petName: String,
+  readinessScore: Number,
+  timelineWeeks: Number,
+  actionSteps: [{
+    week: Number,
+    category: String,
+    title: String,
+    description: String,
+    completed: { type: Boolean, default: false }
+  }]
+}, { timestamps: true });
+
+const CostPlanSchema = new mongoose.Schema({
+  userId: { type: String, required: true },
+  petId: String,
+  petName: String,
+  city: String,
+  upfrontBudget: Number,
+  monthlyBudget: Number,
+  contingencyFund: Number,
+  customNotes: String,
+  allocations: mongoose.Schema.Types.Mixed
+}, { timestamps: true });
+
+const ReminderSchema = new mongoose.Schema({
+  userId: { type: String, required: true },
+  petName: { type: String, required: true },
+  title: { type: String, required: true },
+  category: { type: String, enum: ['vaccination', 'vet_checkup', 'deworming', 'grooming', 'other'], default: 'vaccination' },
+  dueDate: { type: String, required: true },
+  completed: { type: Boolean, default: false },
+  notes: String
+}, { timestamps: true });
+
 // Compile models safely if not already registered
 const MongoosePetContent = mongoose.models.PetContent || mongoose.model('PetContent', PetContentSchema);
 const MongooseQuestionnaire = mongoose.models.Questionnaire || mongoose.model('Questionnaire', QuestionnaireSchema);
@@ -87,6 +151,12 @@ const MongooseRemediationTemplate = mongoose.models.RemediationTemplate || mongo
 const MongooseOnboardingGuide = mongoose.models.OnboardingGuide || mongoose.model('OnboardingGuide', OnboardingGuideSchema);
 const MongooseFaqItem = mongoose.models.FaqItem || mongoose.model('FaqItem', FaqItemSchema);
 const MongooseAdvisorConversation = mongoose.models.AdvisorConversation || mongoose.model('AdvisorConversation', AdvisorConversationSchema);
+const MongooseClickEvent = mongoose.models.ClickEvent || mongoose.model('ClickEvent', ClickEventSchema);
+const MongoosePetViewEvent = mongoose.models.PetViewEvent || mongoose.model('PetViewEvent', PetViewEventSchema);
+const MongooseQuizSnapshot = mongoose.models.QuizSnapshot || mongoose.model('QuizSnapshot', QuizSnapshotSchema);
+const MongooseRoadmap = mongoose.models.Roadmap || mongoose.model('Roadmap', RoadmapSchema);
+const MongooseCostPlan = mongoose.models.CostPlan || mongoose.model('CostPlan', CostPlanSchema);
+const MongooseReminder = mongoose.models.Reminder || mongoose.model('Reminder', ReminderSchema);
 
 // Helper to determine if Mongoose is connected
 function isMongooseConnected() {
@@ -142,3 +212,9 @@ export const RemediationTemplates = createModelWrapper('RemediationTemplates', M
 export const OnboardingGuides = createModelWrapper('OnboardingGuides', MongooseOnboardingGuide);
 export const FaqItems = createModelWrapper('FaqItems', MongooseFaqItem);
 export const AdvisorConversations = createModelWrapper('AdvisorConversations', MongooseAdvisorConversation);
+export const ClickEvents = createModelWrapper('ClickEvents', MongooseClickEvent);
+export const PetViewEvents = createModelWrapper('PetViewEvents', MongoosePetViewEvent);
+export const QuizSnapshots = createModelWrapper('QuizSnapshots', MongooseQuizSnapshot);
+export const Roadmaps = createModelWrapper('Roadmaps', MongooseRoadmap);
+export const CostPlans = createModelWrapper('CostPlans', MongooseCostPlan);
+export const Reminders = createModelWrapper('Reminders', MongooseReminder);

@@ -58,9 +58,9 @@ export default function ExplorePetsPage() {
     { id: 'all', label: 'All Species' },
     { id: 'dog', label: 'Dogs' },
     { id: 'cat', label: 'Cats' },
-    { id: 'small_pet', label: 'Small Pets' },
+    { id: 'small_pet', label: 'Rabbits & Small Pets' },
     { id: 'bird', label: 'Birds' },
-    { id: 'fish', label: 'Aquarium' }
+    { id: 'fish', label: 'Aquatics & Turtles' }
   ];
 
   return (
@@ -69,12 +69,12 @@ export default function ExplorePetsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-sand-200">
         <div>
-          <span className="text-xs font-bold text-brand-600 uppercase tracking-wider">Breeds & Species</span>
+          <span className="text-xs font-bold text-brand-600 uppercase tracking-wider">Breeds & Species Catalog</span>
           <h1 className="text-3xl sm:text-4xl font-black text-sand-900 tracking-tight">
-            Explore 22 Pet Profiles
+            Explore {pets.length > 0 ? `${pets.length} Companion Profiles` : 'Breed Profiles'}
           </h1>
           <p className="text-sm text-sand-800 mt-1">
-            Compare behavioral demands, Indian climate resilience, and realistic ownership budgets.
+            Compare behavioral demands, Indian climate resilience, and realistic ownership budgets across {pets.length || 64} breeds.
           </p>
         </div>
 
@@ -176,7 +176,7 @@ export default function ExplorePetsPage() {
           <PawPrint className="w-12 h-12 text-sand-800 mx-auto" />
           <h3 className="font-bold text-lg text-sand-900">No matching pets found</h3>
           <p className="text-xs text-sand-800 max-w-sm mx-auto">
-            Try adjusting your search criteria or reset filters to view all 22 companion profiles.
+            Try adjusting your search criteria or reset filters to view all companion profiles.
           </p>
           <button
             onClick={resetFilters}

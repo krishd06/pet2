@@ -68,3 +68,11 @@ export function requireAdmin(req, res, next) {
   }
   next();
 }
+
+export function requireShelter(req, res, next) {
+  if (!req.user || (req.user.role !== 'shelter' && req.user.role !== 'admin')) {
+    return res.status(403).json({ error: 'Access denied. Shelter account required.' });
+  }
+  next();
+}
+

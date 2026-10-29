@@ -12,7 +12,16 @@ import {
   AlertCircle,
   CheckCircle2,
   BarChart2,
-  Building
+  Building,
+  Users,
+  CreditCard,
+  MousePointerClick,
+  FileSpreadsheet,
+  Sparkles,
+  ShieldCheck,
+  ToggleLeft,
+  ToggleRight,
+  ExternalLink
 } from 'lucide-react';
 
 export default function AdminPage() {
@@ -20,8 +29,12 @@ export default function AdminPage() {
   const [stats, setStats] = useState(null);
   const [animals, setAnimals] = useState([]);
   const [shelters, setShelters] = useState([]);
+  const [partners, setPartners] = useState([]);
+  const [providers, setProviders] = useState([]);
+  const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('stats'); // 'stats' | 'animals' | 'shelters'
+  const [activeTab, setActiveTab] = useState('revenue'); 
+  // 'revenue' | 'shelters' | 'partners' | 'providers' | 'animals' | 'analytics'
 
   // Modal for creating/editing animal
   const [isAnimalModalOpen, setIsAnimalModalOpen] = useState(false);
@@ -58,47 +71,67 @@ export default function AdminPage() {
       setLoading(false);
       return;
     }
-
-    async function loadAdminData() {
-      setLoading(true);
-      try {
-        const [statsRes, animalsRes, sheltersRes] = await Promise.all([
-          api.getAdminStats().catch(() => null),
-          api.getAnimals().catch(() => ({ animals: [] })),
-          api.getShelters().catch(() => ({ shelters: [] }))
-        ]);
-
-        if (statsRes) setStats(statsRes);
-        if (animalsRes?.animals) setAnimals(animalsRes.animals);
-        if (sheltersRes?.shelters) setShelters(sheltersRes.shelters);
-      } catch (err) {
-        console.error('Failed to load admin data:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
     loadAdminData();
   }, [isAdmin]);
 
-  if (!isAdmin) {
-    return (
-      <div className="max-w-md mx-auto px-4 py-20 text-center space-y-4">
-        <AlertCircle className="w-12 h-12 text-amber-500 mx-auto" />
-        <h2 className="text-xl font-bold text-sand-900">Administrator Access Required</h2>
-        <p className="text-xs text-sand-800">
-          This portal is reserved for shelter coordinators and platform administrators.
-        </p>
-        <button
-          onClick={() => {
-            localStorage.setItem('pawmatch_token', '');
-            window.location.href = '/auth';
-          }}
-          className="px-5 py-2.5 rounded-xl bg-brand-500 text-white font-bold text-xs"
-        >
-          Sign In as Demo Admin
-        </button>
-      </div>
-    );
+  async function loadAdminData() {
+    setLoading(true);
+    try {
+      const [statsRes, animalsRes, sheltersRes, partnersRes, servicesRes] = await Promise.all([
+        api.getAdminStats().catch(() => null),
+        api.getAnimals().catch(() => ({ animals: [] })),
+        api.getShelters().catch(() => ({ shelters: [] })),
+        api.getPartners().catch(() => ({ partners: [] })),
+        api.getServices().catch(() => ({ providers: [] }))
+      ]);
+
+      if (statsRes) {
+        setStats(statsRes);
+        if (statsRes.partners) setPartners(statsRes.partners);
+        if (statsRes.providers) setProviders(statsRes.providers);
+        if (statsRes.serviceLeads?.recentLeads) setLeads(statsRes.serviceLeads.recentLeads);
+      }
+      if (animalsRes?.animals) setAnimals(animalsRes.animals);
+      if (sheltersRes?.shelters) setShelters(sheltersRes.shelters);
+      if (partnersRes?.partners && (!statsRes?.partners || statsRes.partners.length === 0)) {
+        setPartners(partnersRes.partners);
+      }
+      if (servicesRes?.providers && (!statsRes?.providers || statsRes.providers.length === 0)) {
+        setProviders(servicesRes.providers);
+      }
+    } catch (err) {
+      console.error('Failed to load admin data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // --- Moderation Handlers ---
+  async function handleToggleVerifyShelter(shelterId, currentStatus) {
+    try {
+      await api.verifyShelter(shelterId, !currentStatus);
+      setShelters(prev => prev.map(s => s.id === shelterId ? { ...s, verified: !currentStatus } : s));
+    } catch (err) {
+      alert('Failed to update shelter verification: ' + err.message);
+    }
+  }
+
+  async function handleTogglePartnerActive(partnerId, currentStatus) {
+    try {
+      await api.togglePartner(partnerId, !currentStatus);
+      setPartners(prev => prev.map(p => p.id === partnerId ? { ...p, active: !currentStatus } : p));
+    } catch (err) {
+      alert('Failed to toggle partner: ' + err.message);
+    }
+  }
+
+  async function handleToggleProviderActive(providerId, currentStatus) {
+    try {
+      await api.toggleServiceProvider(providerId, !currentStatus);
+      setProviders(prev => prev.map(p => p.id === providerId ? { ...p, active: !currentStatus } : p));
+    } catch (err) {
+      alert('Failed to toggle provider: ' + err.message);
+    }
   }
 
   // --- Animal CRUD handlers ---
@@ -157,127 +190,466 @@ export default function AdminPage() {
     }
   }
 
+  if (!isAdmin) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-20 text-center space-y-4">
+        <AlertCircle className="w-12 h-12 text-amber-500 mx-auto" />
+        <h2 className="text-xl font-bold text-sand-900">Administrator Access Required</h2>
+        <p className="text-xs text-sand-800">
+          This portal is reserved for platform administrators to manage verified shelters, partner leads, and mock revenue.
+        </p>
+        <button
+          onClick={() => {
+            window.location.href = '/auth';
+          }}
+          className="px-5 py-2.5 rounded-xl bg-brand-500 text-white font-bold text-xs"
+        >
+          Sign In as Demo Admin
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
       
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-sand-200">
-        <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sand-200 text-sand-900 text-xs font-bold mb-2">
-            <Sliders className="w-3.5 h-3.5" />
-            <span>Admin Control Center</span>
+      {/* Top Banner */}
+      <div className="bg-sand-900 rounded-3xl p-6 sm:p-8 text-white shadow-card flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 rounded-full bg-brand-500/20 text-brand-400 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5" /> PawMatch Master Administration
+            </span>
+            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-bold">
+              Test Sandbox Mode Active
+            </span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-sand-900 tracking-tight">
-            Platform Administration
-          </h1>
-          <p className="text-sm text-sand-800 mt-1">
-            Real-time assessment metrics, adoptable animal inventory, and shelter listings.
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Platform Operations & Moderation</h1>
+          <p className="text-xs sm:text-sm text-sand-700">
+            Monitor mock revenue streams, partner link clicks, shelter verification status, and inbound service quotes.
           </p>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex items-center bg-sand-100 p-1.5 rounded-2xl border border-sand-200">
-          <button
-            onClick={() => setActiveTab('stats')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
-              activeTab === 'stats' ? 'bg-white text-sand-900 shadow-sm' : 'text-sand-800 hover:text-sand-900'
-            }`}
-          >
-            Overview & Stats
-          </button>
-          <button
-            onClick={() => setActiveTab('animals')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
-              activeTab === 'animals' ? 'bg-white text-sand-900 shadow-sm' : 'text-sand-800 hover:text-sand-900'
-            }`}
-          >
-            Animals ({animals.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('shelters')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
-              activeTab === 'shelters' ? 'bg-white text-sand-900 shadow-sm' : 'text-sand-800 hover:text-sand-900'
-            }`}
-          >
-            Shelters ({shelters.length})
-          </button>
+        <button
+          onClick={loadAdminData}
+          className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors self-start md:self-center"
+        >
+          Refresh Live Metrics
+        </button>
+      </div>
+
+      {/* Feature H: Top Metrics Summary Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        
+        <div className="bg-white p-5 rounded-3xl border border-sand-200 shadow-card space-y-1">
+          <span className="text-[10px] font-bold text-sand-800 uppercase tracking-wider block">Total Users</span>
+          <div className="text-2xl font-black text-sand-900 flex items-center gap-1.5">
+            <Users className="w-4 h-4 text-brand-500" />
+            <span>{stats?.totalUsers || 2}</span>
+          </div>
+          <span className="text-[10px] text-sand-800 block">Adopters & Shelters</span>
+        </div>
+
+        <div className="bg-white p-5 rounded-3xl border border-sand-200 shadow-card space-y-1">
+          <span className="text-[10px] font-bold text-sand-800 uppercase tracking-wider block">Total Mock Revenue</span>
+          <div className="text-2xl font-black text-emerald-600 flex items-center gap-1.5">
+            <CreditCard className="w-4 h-4 text-emerald-600" />
+            <span>₹{(stats?.totalMockRevenue || 0).toLocaleString('en-IN')}</span>
+          </div>
+          <span className="text-[10px] text-sand-800 block">All 3 Revenue Streams</span>
+        </div>
+
+        <div className="bg-white p-5 rounded-3xl border border-sand-200 shadow-card space-y-1">
+          <span className="text-[10px] font-bold text-sand-800 uppercase tracking-wider block">Partner Clicks</span>
+          <div className="text-2xl font-black text-brand-600 flex items-center gap-1.5">
+            <MousePointerClick className="w-4 h-4 text-brand-600" />
+            <span>{stats?.partnerClicks?.totalClicks || 0}</span>
+          </div>
+          <span className="text-[10px] text-sand-800 block">MongoDB Click Events</span>
+        </div>
+
+        <div className="bg-white p-5 rounded-3xl border border-sand-200 shadow-card space-y-1">
+          <span className="text-[10px] font-bold text-sand-800 uppercase tracking-wider block">Quote Leads</span>
+          <div className="text-2xl font-black text-amber-600 flex items-center gap-1.5">
+            <FileSpreadsheet className="w-4 h-4 text-amber-600" />
+            <span>{stats?.serviceLeads?.totalLeads || 0}</span>
+          </div>
+          <span className="text-[10px] text-sand-800 block">Vets, Trainers, Groomers</span>
+        </div>
+
+        <div className="bg-white p-5 rounded-3xl border border-sand-200 shadow-card space-y-1">
+          <span className="text-[10px] font-bold text-sand-800 uppercase tracking-wider block">Featured Shelters</span>
+          <div className="text-2xl font-black text-sand-900 flex items-center gap-1.5">
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            <span>{stats?.featuredSheltersCount || 1}</span>
+          </div>
+          <span className="text-[10px] text-sand-800 block">₹999 / 30-day plans</span>
+        </div>
+
+        <div className="bg-white p-5 rounded-3xl border border-sand-200 shadow-card space-y-1">
+          <span className="text-[10px] font-bold text-sand-800 uppercase tracking-wider block">Trial Bookings</span>
+          <div className="text-2xl font-black text-sand-900 flex items-center gap-1.5">
+            <HeartHandshake className="w-4 h-4 text-emerald-600" />
+            <span>{stats?.trialBookingsCount || 0}</span>
+          </div>
+          <span className="text-[10px] text-sand-800 block">Paid Fosters Booked</span>
+        </div>
+
+      </div>
+
+      {/* Navigation Tabs */}
+      <div className="border-b border-sand-200 pb-2">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+          {[
+            { id: 'revenue', label: 'Revenue & Leads' },
+            { id: 'shelters', label: `Shelters (${shelters.length})` },
+            { id: 'partners', label: `Partners (${partners.length})` },
+            { id: 'providers', label: `Service Providers (${providers.length})` },
+            { id: 'animals', label: `Animals (${animals.length})` },
+            { id: 'analytics', label: 'Match Analytics' }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'bg-brand-500 text-white shadow-soft'
+                  : 'bg-sand-100 text-sand-800 hover:bg-sand-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Tab 1: Stats & Overview */}
-      {activeTab === 'stats' && (
+      {/* Tab 1: Revenue Streams & Leads */}
+      {activeTab === 'revenue' && (
         <div className="space-y-8">
           
-          {/* Top Counters */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white p-5 rounded-3xl border border-sand-200 shadow-card">
-              <span className="block text-xs font-bold text-sand-800 uppercase tracking-wider mb-1">Total Assessments</span>
-              <span className="text-3xl font-black text-brand-600">{stats?.totalAssessments || 0}</span>
-              <span className="text-[10px] text-sand-800 block mt-1">Run across urban India</span>
+          {/* Revenue Breakdown by Stream */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-sand-200 shadow-card space-y-6">
+            <div className="flex items-center justify-between border-b border-sand-200 pb-4">
+              <div>
+                <h3 className="font-extrabold text-lg text-sand-900 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-emerald-600" />
+                  <span>Simulated Mock Revenue Streams</span>
+                </h3>
+                <p className="text-xs text-sand-800">
+                  Rule 4: All payment streams running in test/mock mode without processing real money.
+                </p>
+              </div>
+              <div className="text-right">
+                <span className="text-xs font-bold text-sand-800 uppercase block">Total Simulated</span>
+                <span className="text-2xl font-black text-emerald-700">₹{(stats?.totalMockRevenue || 0).toLocaleString('en-IN')}</span>
+              </div>
             </div>
 
-            <div className="bg-white p-5 rounded-3xl border border-sand-200 shadow-card">
-              <span className="block text-xs font-bold text-sand-800 uppercase tracking-wider mb-1">Adoptable Animals</span>
-              <span className="text-3xl font-black text-emerald-600">{animals.length}</span>
-              <span className="text-[10px] text-sand-800 block mt-1">Active shelter rescues</span>
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-sand-50 p-5 rounded-2xl border border-sand-200 space-y-2">
+                <span className="text-xs font-bold text-sand-800 uppercase tracking-wider block">Adopter Subscriptions</span>
+                <div className="text-2xl font-black text-sand-900">₹{(stats?.subscriptionRevenue || 0).toLocaleString('en-IN')}</div>
+                <p className="text-[11px] text-sand-800">
+                  {stats?.premiumSubscribersCount || 0} active premium adopters (₹299/mo or ₹2,499/yr)
+                </p>
+              </div>
 
-            <div className="bg-white p-5 rounded-3xl border border-sand-200 shadow-card">
-              <span className="block text-xs font-bold text-sand-800 uppercase tracking-wider mb-1">Verified Shelters</span>
-              <span className="text-3xl font-black text-sand-900">{shelters.length}</span>
-              <span className="text-[10px] text-sand-800 block mt-1">Across 8 major cities</span>
-            </div>
+              <div className="bg-sand-50 p-5 rounded-2xl border border-sand-200 space-y-2">
+                <span className="text-xs font-bold text-sand-800 uppercase tracking-wider block">Supported Foster Trials</span>
+                <div className="text-2xl font-black text-sand-900">₹{(stats?.trialRevenue || 0).toLocaleString('en-IN')}</div>
+                <p className="text-[11px] text-sand-800">
+                  {stats?.trialBookingsCount || 0} foster bookings (₹1,499 for 7d, ₹2,499 for 14d, ₹4,499 for 30d)
+                </p>
+              </div>
 
-            <div className="bg-white p-5 rounded-3xl border border-sand-200 shadow-card">
-              <span className="block text-xs font-bold text-sand-800 uppercase tracking-wider mb-1">Native Breeds Bonus</span>
-              <span className="text-3xl font-black text-brand-600">+6 pts</span>
-              <span className="text-[10px] text-sand-800 block mt-1">Active Indian context modifier</span>
+              <div className="bg-sand-50 p-5 rounded-2xl border border-sand-200 space-y-2">
+                <span className="text-xs font-bold text-sand-800 uppercase tracking-wider block">Shelter Featured Plans</span>
+                <div className="text-2xl font-black text-sand-900">₹{(stats?.shelterPlanRevenue || 0).toLocaleString('en-IN')}</div>
+                <p className="text-[11px] text-sand-800">
+                  {stats?.featuredSheltersCount || 1} featured shelter partners (₹999 per 30 days)
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Tier Distribution & Popular Breeds */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-sand-200 shadow-card space-y-4">
-              <h3 className="font-extrabold text-lg text-sand-900 flex items-center gap-2">
-                <BarChart2 className="w-5 h-5 text-brand-600" />
-                <span>Compatibility Tier Distribution</span>
-              </h3>
-              <div className="space-y-3 text-xs sm:text-sm">
-                {Object.entries(stats?.tierDistribution || {}).map(([tier, count]) => (
-                  <div key={tier} className="bg-sand-50 p-3 rounded-2xl border border-sand-200 flex justify-between items-center">
-                    <span className="font-bold text-sand-900">{tier}</span>
-                    <span className="px-3 py-1 rounded-full bg-sand-200 text-sand-900 font-extrabold text-xs">
-                      {count} matches
-                    </span>
-                  </div>
-                ))}
-              </div>
+          {/* Service Quote Inbound Leads Table */}
+          <div className="bg-white rounded-3xl border border-sand-200 shadow-card overflow-hidden">
+            <div className="p-6 border-b border-sand-200">
+              <h3 className="font-extrabold text-lg text-sand-900">Service Directory Leads ({leads.length})</h3>
+              <p className="text-xs text-sand-800">Quotes requested by pet parents for vets, trainers, and sitters.</p>
             </div>
 
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-sand-200 shadow-card space-y-4">
-              <h3 className="font-extrabold text-lg text-sand-900 flex items-center gap-2">
-                <Award className="w-5 h-5 text-emerald-600" />
-                <span>Most Frequently Matched Breeds</span>
-              </h3>
-              <div className="space-y-3 text-xs sm:text-sm">
-                {(stats?.popularPets || []).length === 0 ? (
-                  <p className="text-xs text-sand-800 italic">No assessment history yet.</p>
-                ) : (
-                  (stats?.popularPets || []).map((p, idx) => (
-                    <div key={idx} className="bg-sand-50 p-3 rounded-2xl border border-sand-200 flex justify-between items-center">
-                      <span className="font-bold text-sand-900">#{idx + 1} {p.name}</span>
-                      <span className="text-xs text-brand-700 font-bold">{p.count} times top match</span>
-                    </div>
-                  ))
-                )}
+            {leads.length === 0 ? (
+              <p className="text-xs text-sand-800 text-center py-8">No service quote leads logged yet.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-sand-50 border-b border-sand-200 text-sand-800 uppercase text-[10px] font-bold">
+                    <tr>
+                      <th className="p-4">Provider</th>
+                      <th className="p-4">Adopter Lead</th>
+                      <th className="p-4">Contact</th>
+                      <th className="p-4">Message</th>
+                      <th className="p-4">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-sand-100">
+                    {leads.map((l) => (
+                      <tr key={l.id} className="hover:bg-sand-50/50">
+                        <td className="p-4 font-bold text-sand-900">{l.provider_name || 'Service Provider'}</td>
+                        <td className="p-4 font-semibold text-sand-900">{l.adopter_name}</td>
+                        <td className="p-4 text-sand-800">{l.adopter_phone} • {l.adopter_email}</td>
+                        <td className="p-4 text-sand-800 italic max-w-xs truncate">"{l.message}"</td>
+                        <td className="p-4 text-sand-700 text-[11px]">{new Date(l.created_at).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </div>
+            )}
           </div>
 
         </div>
       )}
 
-      {/* Tab 2: Animals Inventory */}
+      {/* Tab 2: Shelters Management & Verification Toggle */}
+      {activeTab === 'shelters' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-extrabold text-sand-900">Shelter Verification & Plan Status</h2>
+              <p className="text-xs text-sand-800">Toggle "Verified Shelter" badge to instill adopter trust.</p>
+            </div>
+            <button
+              onClick={() => {
+                setShelterForm({
+                  id: null,
+                  name: '',
+                  city: 'Mumbai',
+                  phone: '',
+                  email: '',
+                  website: '',
+                  address: '',
+                  description: ''
+                });
+                setIsShelterModalOpen(true);
+              }}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Register Shelter</span>
+            </button>
+          </div>
+
+          <div className="bg-white rounded-3xl border border-sand-200 shadow-card overflow-hidden">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-sand-50 border-b border-sand-200 text-sand-800 uppercase text-[10px] font-bold">
+                <tr>
+                  <th className="p-4">Shelter Name</th>
+                  <th className="p-4">City & Contact</th>
+                  <th className="p-4">Plan Tier</th>
+                  <th className="p-4">Verified Status</th>
+                  <th className="p-4 text-right">Moderation Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-sand-100">
+                {shelters.map((sh) => (
+                  <tr key={sh.id} className="hover:bg-sand-50/50">
+                    <td className="p-4">
+                      <span className="font-extrabold text-sand-900 text-sm block">{sh.name}</span>
+                      <span className="text-[11px] text-sand-800">{sh.address}</span>
+                    </td>
+                    <td className="p-4">
+                      <span className="font-semibold text-sand-900 block">{sh.city}</span>
+                      <span className="text-[11px] text-sand-800">{sh.phone} • {sh.email}</span>
+                    </td>
+                    <td className="p-4">
+                      {sh.plan === 'featured' ? (
+                        <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 font-bold text-[10px] inline-flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-amber-600" /> Featured
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded-full bg-sand-100 text-sand-800 font-semibold text-[10px]">
+                          Free Starter
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      {sh.verified ? (
+                        <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] inline-flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Verified
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded-full bg-sand-200 text-sand-700 font-semibold text-[10px]">
+                          Unverified
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4 text-right space-x-2">
+                      <button
+                        onClick={() => handleToggleVerifyShelter(sh.id, sh.verified)}
+                        className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-colors ${
+                          sh.verified
+                            ? 'bg-sand-100 hover:bg-sand-200 text-sand-800'
+                            : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                        }`}
+                      >
+                        {sh.verified ? 'Revoke Verification' : 'Mark Verified'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 3: Partners & Affiliates Moderation */}
+      {activeTab === 'partners' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-extrabold text-sand-900">Affiliate & Brand Partners</h2>
+              <p className="text-xs text-sand-800">
+                Rule 5: Every partner item displays a "Partner" label with legal affiliate disclosure.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-sand-800 bg-sand-100 px-3 py-1 rounded-xl">
+              Total Clicks: {stats?.partnerClicks?.totalClicks || 0}
+            </span>
+          </div>
+
+          <div className="bg-white rounded-3xl border border-sand-200 shadow-card overflow-hidden">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-sand-50 border-b border-sand-200 text-sand-800 uppercase text-[10px] font-bold">
+                <tr>
+                  <th className="p-4">Brand / Partner</th>
+                  <th className="p-4">Category</th>
+                  <th className="p-4">Commission Note</th>
+                  <th className="p-4">Clicks (MongoDB)</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4 text-right">Toggle Active</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-sand-100">
+                {partners.map((p) => {
+                  const clickCount = stats?.partnerClicks?.byPartner?.[p.id] || 0;
+                  return (
+                    <tr key={p.id} className="hover:bg-sand-50/50">
+                      <td className="p-4">
+                        <span className="font-extrabold text-sand-900 text-sm block">{p.name}</span>
+                        <a
+                          href={p.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[11px] text-brand-600 hover:underline flex items-center gap-1"
+                        >
+                          <span>{p.url}</span>
+                          <ExternalLink className="w-2.5 h-2.5" />
+                        </a>
+                      </td>
+                      <td className="p-4 capitalize font-semibold text-sand-800">{p.category}</td>
+                      <td className="p-4 text-sand-800 text-[11px]">{p.commission_note || 'Standard affiliate'}</td>
+                      <td className="p-4 font-black text-brand-600">{clickCount} clicks</td>
+                      <td className="p-4">
+                        {p.active ? (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                            Active
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-sand-200 text-sand-700 font-bold text-[10px]">
+                            Paused
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-4 text-right">
+                        <button
+                          onClick={() => handleTogglePartnerActive(p.id, p.active)}
+                          className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-colors ${
+                            p.active ? 'bg-sand-100 hover:bg-sand-200 text-sand-800' : 'bg-brand-500 hover:bg-brand-600 text-white'
+                          }`}
+                        >
+                          {p.active ? 'Deactivate' : 'Activate'}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 4: Service Providers Moderation */}
+      {activeTab === 'providers' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-extrabold text-sand-900">Service Directory Providers</h2>
+              <p className="text-xs text-sand-800">Enable or disable vets, trainers, and sitters appearing in searches.</p>
+            </div>
+            <span className="text-xs font-bold text-sand-800 bg-sand-100 px-3 py-1 rounded-xl">
+              Active Providers: {providers.filter(p => p.active !== false).length}
+            </span>
+          </div>
+
+          <div className="bg-white rounded-3xl border border-sand-200 shadow-card overflow-hidden">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-sand-50 border-b border-sand-200 text-sand-800 uppercase text-[10px] font-bold">
+                <tr>
+                  <th className="p-4">Provider</th>
+                  <th className="p-4">Category & City</th>
+                  <th className="p-4">Pricing Range</th>
+                  <th className="p-4">Rating</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4 text-right">Toggle Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-sand-100">
+                {providers.map((pr) => (
+                  <tr key={pr.id} className="hover:bg-sand-50/50">
+                    <td className="p-4">
+                      <span className="font-extrabold text-sand-900 text-sm block">{pr.name}</span>
+                      <span className="text-[11px] text-sand-800">{pr.address}</span>
+                    </td>
+                    <td className="p-4">
+                      <span className="capitalize font-semibold text-sand-900 block">{pr.category}</span>
+                      <span className="text-[11px] text-sand-800">{pr.city}</span>
+                    </td>
+                    <td className="p-4 text-sand-800 font-medium">{pr.price_range || 'Variable'}</td>
+                    <td className="p-4 font-bold text-amber-700">★ {pr.rating || 4.8}</td>
+                    <td className="p-4">
+                      {pr.active !== false ? (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                          Active
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full bg-sand-200 text-sand-700 font-bold text-[10px]">
+                          Inactive
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4 text-right">
+                      <button
+                        onClick={() => handleToggleProviderActive(pr.id, pr.active !== false)}
+                        className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-colors ${
+                          pr.active !== false ? 'bg-sand-100 hover:bg-sand-200 text-sand-800' : 'bg-brand-500 hover:bg-brand-600 text-white'
+                        }`}
+                      >
+                        {pr.active !== false ? 'Deactivate' : 'Activate'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 5: Animals Inventory */}
       {activeTab === 'animals' && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
@@ -332,30 +704,28 @@ export default function AdminPage() {
                       </div>
                       <span>{anim.name}</span>
                     </td>
-                    <td className="p-4 text-sand-800">
-                      <span className="font-semibold text-sand-900 block">{anim.breed}</span>
-                      <span className="capitalize">{anim.species}</span>
-                    </td>
+                    <td className="p-4 text-sand-800">{anim.breed} ({anim.species})</td>
                     <td className="p-4 text-sand-800">{anim.city}</td>
-                    <td className="p-4 text-sand-800">~{Math.round(anim.age_months / 12 * 10) / 10} yrs</td>
-                    <td className="p-4 text-emerald-800 font-medium">
-                      {anim.vaccinated ? 'Vaccinated' : ''} {anim.neutered ? '• Neutered' : ''}
+                    <td className="p-4 text-sand-800">{Math.round(anim.age_months / 12 * 10) / 10} yrs</td>
+                    <td className="p-4">
+                      <div className="flex gap-1 text-[10px]">
+                        {anim.vaccinated && <span className="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">Vax</span>}
+                        {anim.neutered && <span className="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">Neutered</span>}
+                      </div>
                     </td>
-                    <td className="p-4 text-right space-x-2">
+                    <td className="p-4 text-right space-x-1">
                       <button
                         onClick={() => {
                           setAnimalForm(anim);
                           setIsAnimalModalOpen(true);
                         }}
-                        className="p-1.5 rounded-lg hover:bg-sand-200 text-sand-800 transition-colors"
-                        title="Edit"
+                        className="p-1.5 rounded-lg hover:bg-sand-100 text-sand-800"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDeleteAnimal(anim.id)}
-                        className="p-1.5 rounded-lg hover:bg-red-50 text-red-600 transition-colors"
-                        title="Delete"
+                        className="p-1.5 rounded-lg hover:bg-red-50 text-red-600"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -368,66 +738,45 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* Tab 3: Shelters Inventory */}
-      {activeTab === 'shelters' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-extrabold text-sand-900">Manage Partner Shelters</h2>
-            <button
-              onClick={() => {
-                setShelterForm({
-                  id: null,
-                  name: '',
-                  city: 'Mumbai',
-                  phone: '',
-                  email: '',
-                  website: '',
-                  address: '',
-                  description: ''
-                });
-                setIsShelterModalOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-soft transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add Shelter</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {shelters.map((sh) => (
-              <div key={sh.id} className="bg-white p-5 rounded-2xl border border-sand-200 shadow-card space-y-3 text-xs">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase text-brand-600">{sh.city}</span>
-                    <h4 className="font-extrabold text-base text-sand-900">{sh.name}</h4>
+      {/* Tab 6: Analytics */}
+      {activeTab === 'analytics' && (
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-sand-200 shadow-card space-y-4">
+              <h3 className="font-extrabold text-lg text-sand-900 flex items-center gap-2">
+                <BarChart2 className="w-5 h-5 text-brand-600" />
+                <span>Compatibility Tier Distribution</span>
+              </h3>
+              <div className="space-y-3 text-xs sm:text-sm">
+                {Object.entries(stats?.tierDistribution || {}).map(([tier, count]) => (
+                  <div key={tier} className="bg-sand-50 p-3 rounded-2xl border border-sand-200 flex justify-between items-center">
+                    <span className="font-bold text-sand-900">{tier}</span>
+                    <span className="px-3 py-1 rounded-full bg-sand-200 text-sand-900 font-extrabold text-xs">
+                      {count} matches
+                    </span>
                   </div>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => {
-                        setShelterForm(sh);
-                        setIsShelterModalOpen(true);
-                      }}
-                      className="p-1.5 rounded-lg hover:bg-sand-100 text-sand-800"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteShelter(sh.id)}
-                      className="p-1.5 rounded-lg hover:bg-red-50 text-red-600"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                <p className="text-sand-800">{sh.address}</p>
-                <div className="flex flex-wrap gap-3 pt-2 border-t border-sand-100 text-sand-800">
-                  <span>Phone: <strong>{sh.phone}</strong></span>
-                  <span>Email: <strong>{sh.email}</strong></span>
-                </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-sand-200 shadow-card space-y-4">
+              <h3 className="font-extrabold text-lg text-sand-900 flex items-center gap-2">
+                <Award className="w-5 h-5 text-emerald-600" />
+                <span>Most Frequently Matched Breeds</span>
+              </h3>
+              <div className="space-y-3 text-xs sm:text-sm">
+                {(stats?.popularPets || []).length === 0 ? (
+                  <p className="text-xs text-sand-800 italic">No assessment history yet.</p>
+                ) : (
+                  (stats?.popularPets || []).map((p, idx) => (
+                    <div key={idx} className="bg-sand-50 p-3 rounded-2xl border border-sand-200 flex justify-between items-center">
+                      <span className="font-bold text-sand-900">#{idx + 1} {p.name}</span>
+                      <span className="text-xs text-brand-700 font-bold">{p.count} times top match</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -518,32 +867,53 @@ export default function AdminPage() {
                   type="url"
                   value={animalForm.photo_url}
                   onChange={(e) => setAnimalForm({ ...animalForm, photo_url: e.target.value })}
-                  placeholder="https://images.unsplash.com/..."
+                  placeholder="https://..."
                   className="w-full bg-sand-50 border border-sand-300 rounded-xl p-2.5 text-sand-900"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-sand-900 mb-1">Description</label>
+                <label className="block font-bold text-sand-900 mb-1">Description / Notes</label>
                 <textarea
+                  rows={3}
                   value={animalForm.description}
                   onChange={(e) => setAnimalForm({ ...animalForm, description: e.target.value })}
-                  rows={3}
                   className="w-full bg-sand-50 border border-sand-300 rounded-xl p-2.5 text-sand-900"
                 />
               </div>
 
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={animalForm.vaccinated}
+                    onChange={(e) => setAnimalForm({ ...animalForm, vaccinated: e.target.checked })}
+                    className="accent-brand-500 rounded"
+                  />
+                  <span className="font-bold text-sand-900">Vaccinated</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={animalForm.neutered}
+                    onChange={(e) => setAnimalForm({ ...animalForm, neutered: e.target.checked })}
+                    className="accent-brand-500 rounded"
+                  />
+                  <span className="font-bold text-sand-900">Spayed / Neutered</span>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4 border-t border-sand-200">
                 <button
                   type="button"
                   onClick={() => setIsAnimalModalOpen(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-sand-300 text-xs font-bold text-sand-800"
+                  className="px-4 py-2 rounded-xl bg-sand-100 text-sand-800 font-bold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold"
+                  className="px-5 py-2 rounded-xl bg-brand-500 text-white font-bold"
                 >
                   Save Animal
                 </button>
@@ -558,7 +928,7 @@ export default function AdminPage() {
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white max-w-lg w-full rounded-3xl p-6 sm:p-8 space-y-5 shadow-2xl border border-sand-200 max-h-[90vh] overflow-y-auto">
             <h3 className="font-black text-xl text-sand-900">
-              {shelterForm.id ? 'Edit Partner Shelter' : 'Add New Shelter'}
+              {shelterForm.id ? 'Edit Shelter' : 'Register New Shelter'}
             </h3>
 
             <form onSubmit={handleSaveShelter} className="space-y-4 text-xs sm:text-sm">
@@ -587,7 +957,7 @@ export default function AdminPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block font-bold text-sand-900 mb-1">Phone Number</label>
+                  <label className="block font-bold text-sand-900 mb-1">Phone</label>
                   <input
                     type="text"
                     required
@@ -620,26 +990,27 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <label className="block font-bold text-sand-900 mb-1">Physical Address</label>
-                <textarea
+                <label className="block font-bold text-sand-900 mb-1">Address</label>
+                <input
+                  type="text"
+                  required
                   value={shelterForm.address}
                   onChange={(e) => setShelterForm({ ...shelterForm, address: e.target.value })}
-                  rows={2}
                   className="w-full bg-sand-50 border border-sand-300 rounded-xl p-2.5 text-sand-900"
                 />
               </div>
 
-              <div className="flex gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-4 border-t border-sand-200">
                 <button
                   type="button"
                   onClick={() => setIsShelterModalOpen(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-sand-300 text-xs font-bold text-sand-800"
+                  className="px-4 py-2 rounded-xl bg-sand-100 text-sand-800 font-bold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold"
+                  className="px-5 py-2 rounded-xl bg-brand-500 text-white font-bold"
                 >
                   Save Shelter
                 </button>

@@ -19,6 +19,14 @@ export const DEMO_USERS = [
     name: 'Aarav Sharma'
   },
   {
+    id: 'usr_shelter_demo',
+    email: 'shelter@pawmatch.in',
+    password: 'ShelterPass123!',
+    password_hash: bcrypt.hashSync('ShelterPass123!', 10),
+    role: 'shelter',
+    name: 'YODA Animal Shelter'
+  },
+  {
     id: 'usr_admin_demo',
     email: 'admin@pawmatch.in',
     password: 'AdminSecret123!',
@@ -697,6 +705,7 @@ export const PETS = [
 export const SHELTERS = [
   {
     id: 'sh_yoda_mumbai',
+    user_id: 'usr_shelter_demo',
     name: 'YODA (Youth Organization in Defence of Animals)',
     city: 'Mumbai',
     address: 'Subhash Chandra Bose Rd, Khar West, Mumbai, Maharashtra 400052',
@@ -704,7 +713,9 @@ export const SHELTERS = [
     email: 'contact@yoda.org.in',
     website: 'https://yodaindia.org',
     description: 'Leading animal rehabilitation sanctuary and adoption center in Mumbai specializing in Indian native puppies and rescue cats.',
-    verified: true
+    verified: true,
+    is_featured: true,
+    plan_name: 'Featured'
   },
   {
     id: 'sh_friendicoes_delhi',
@@ -1973,3 +1984,316 @@ export const ONBOARDING_CAT_PLAN = {
     'Spay / neuter status check and microchipping'
   ]
 };
+
+// 14 Fictional Indian Pet Affiliate / Sponsored Partners across 7 categories
+export const PARTNERS = [
+  {
+    id: 'partner_desipaws_food',
+    name: 'DesiPaws Ayurvedic Nutrition',
+    category: 'food',
+    description: 'Fresh human-grade meals and slow-cooked stews formulated with ashwagandha & turmeric for Indie dog gut health.',
+    url: 'https://example-partner.pawmatch.in/desipaws',
+    commission_note: '12% commission on all new subscriber meal plans',
+    city: null, // National
+    active: true,
+    badge_label: 'Partner',
+    target_tags: 'dog,cat,all_sizes,first_time,budget,native_indie'
+  },
+  {
+    id: 'partner_monsoontail_kibble',
+    name: 'MonsoonTail Grain-Free Kibble',
+    category: 'food',
+    description: 'High-protein grain-free crunch kibble rich in omega-3s for shiny coats and healthy joints during humid monsoons.',
+    url: 'https://example-partner.pawmatch.in/monsoontail',
+    commission_note: '₹250 flat referral fee per 10kg sack',
+    city: null,
+    active: true,
+    badge_label: 'Sponsored',
+    target_tags: 'dog,medium,large,high_energy'
+  },
+  {
+    id: 'partner_vaxdirect',
+    name: 'VaxDirect Doorstep Immunization',
+    category: 'vaccines',
+    description: 'Certified at-home pet vaccine team delivering 7-in-1, anti-rabies, and deworming in cold-chain transport.',
+    url: 'https://example-partner.pawmatch.in/vaxdirect',
+    commission_note: '15% payout per home visit completed',
+    city: 'Mumbai',
+    active: true,
+    badge_label: 'Partner',
+    target_tags: 'dog,cat,puppy,kitten,first_time'
+  },
+  {
+    id: 'partner_pawmedic_kit',
+    name: 'PawMedic Emergency Pet First-Aid Kit',
+    category: 'vaccines',
+    description: 'Comprehensive Indian household triage kit with digital thermometry, tick-removal keys, iodine, and sterile gauze.',
+    url: 'https://example-partner.pawmatch.in/pawmedic',
+    commission_note: '10% affiliate share per kit sold',
+    city: null,
+    active: true,
+    badge_label: 'Partner',
+    target_tags: 'first_time,dog,cat,apartment'
+  },
+  {
+    id: 'partner_pawsecure_insurance',
+    name: 'PawSecure Bharat Health Cover',
+    category: 'insurance',
+    description: 'Comprehensive accident and tick-fever medical cover with no breed exclusions and 24-hour claim payouts.',
+    url: 'https://example-partner.pawmatch.in/pawsecure',
+    commission_note: '₹500 commission per activated policy',
+    city: null,
+    active: true,
+    badge_label: 'Sponsored',
+    target_tags: 'dog,cat,first_time,budget,native_indie'
+  },
+  {
+    id: 'partner_indiekare_insure',
+    name: 'IndieKare Rescue Protection Policy',
+    category: 'insurance',
+    description: 'Specialized low-premium coverage dedicated to adopted street dogs and community cats across urban India.',
+    url: 'https://example-partner.pawmatch.in/indiekare',
+    commission_note: '8% recurring annual commission',
+    city: null,
+    active: true,
+    badge_label: 'Partner',
+    target_tags: 'dog,native_indie,budget'
+  },
+  {
+    id: 'partner_urbanden_crates',
+    name: 'UrbanDen Foldable Training Crates',
+    category: 'crates',
+    description: 'Double-door durable steel wire crates with leak-proof abs pans, sized perfectly for Indian compact apartments.',
+    url: 'https://example-partner.pawmatch.in/urbanden',
+    commission_note: '₹350 per crate dispatched',
+    city: null,
+    active: true,
+    badge_label: 'Partner',
+    target_tags: 'dog,first_time,crate_training,medium,large'
+  },
+  {
+    id: 'partner_breezenest_beds',
+    name: 'BreezeNest Orthopedic Cooling Cot',
+    category: 'crates',
+    description: 'Elevated chew-proof breathable mesh beds keeping pets cool during scorching 40°C Indian summer temperatures.',
+    url: 'https://example-partner.pawmatch.in/breezenest',
+    commission_note: '10% on accessories and beds',
+    city: null,
+    active: true,
+    badge_label: 'Partner',
+    target_tags: 'dog,large,heat_sensitive'
+  },
+  {
+    id: 'partner_neem_grooming',
+    name: 'Neem & Tulsi Herbal Grooming',
+    category: 'grooming',
+    description: 'pH-balanced tick & flea repellent botanical shampoo made with organic virgin coconut oil and neem leaf extracts.',
+    url: 'https://example-partner.pawmatch.in/neem-grooming',
+    commission_note: '14% affiliate commission on care bundles',
+    city: null,
+    active: true,
+    badge_label: 'Partner',
+    target_tags: 'dog,cat,grooming,first_time'
+  },
+  {
+    id: 'partner_cleanpaws_spa',
+    name: 'CleanPaws Mobile Pet Spa Van',
+    category: 'grooming',
+    description: 'Stress-free air-conditioned grooming van arriving right outside your society gates in Mumbai, Bengaluru & Pune.',
+    url: 'https://example-partner.pawmatch.in/cleanpaws',
+    commission_note: '₹200 booking voucher commission',
+    city: 'Bengaluru',
+    active: true,
+    badge_label: 'Sponsored',
+    target_tags: 'dog,cat,grooming'
+  },
+  {
+    id: 'partner_caninecoach_training',
+    name: 'CanineCoach Positive Manners Academy',
+    category: 'training',
+    description: 'Reward-based force-free home and online training for leash pulling, desensitization, and apartment bark management.',
+    url: 'https://example-partner.pawmatch.in/caninecoach',
+    commission_note: '15% per training pack enrollment',
+    city: 'Delhi',
+    active: true,
+    badge_label: 'Partner',
+    target_tags: 'first_time,dog,high_energy,apartment'
+  },
+  {
+    id: 'partner_purrperfect_behavior',
+    name: 'UrbanFeline Whispers & Enrichment',
+    category: 'training',
+    description: 'Certified feline ethologist consultations for inter-cat aggression, litter-box troubleshooting, and apartment vertical climbing setups.',
+    url: 'https://example-partner.pawmatch.in/urbanfeline',
+    commission_note: '₹300 per virtual behavior session',
+    city: null,
+    active: true,
+    badge_label: 'Partner',
+    target_tags: 'cat,kitten,first_time'
+  },
+  {
+    id: 'partner_televet_bharat',
+    name: 'TeleVet Bharat 24x7 Emergency Help',
+    category: 'vet',
+    description: 'Instant video triage consultations with verified Indian veterinarians within 10 minutes from your smartphone.',
+    url: 'https://example-partner.pawmatch.in/televet',
+    commission_note: '₹100 per consultation completed',
+    city: null,
+    active: true,
+    badge_label: 'Partner',
+    target_tags: 'first_time,dog,cat,vet'
+  },
+  {
+    id: 'partner_metro_hospitals',
+    name: 'CityPaws Multi-Speciality Animal Care',
+    category: 'vet',
+    description: 'Full-service surgical theaters, digital radiography, ultrasound diagnostics, and emergency trauma ICU.',
+    url: 'https://example-partner.pawmatch.in/citypaws',
+    commission_note: 'Partner clinic referral program',
+    city: 'Mumbai',
+    active: true,
+    badge_label: 'Sponsored',
+    target_tags: 'vet,emergency,dog,cat'
+  }
+];
+
+// Fictional Service Providers for Services Directory
+export const SERVICE_PROVIDERS = [
+  {
+    id: 'sp_vet_mumbai_1',
+    name: 'Dr. Neha Kulkarni, MVSc',
+    category: 'vet',
+    city: 'Mumbai',
+    area: 'Bandra West',
+    phone: '+91 98201 11223',
+    email: 'drneha@bandravet.in',
+    rating: 4.9,
+    reviews_count: 58,
+    price_range: '₹₹₹',
+    experience_years: 12,
+    description: 'Specialist in canine medicine, feline surgery, and native Indie rescue trauma rehabilitation. Equipped with in-house ultrasound.',
+    address: 'Shop 4, Hill Road, Near Mehboob Studio, Bandra West, Mumbai 400050',
+    active: true,
+    verified: true
+  },
+  {
+    id: 'sp_vet_delhi_1',
+    name: 'Dr. Rajesh Verma Pet Polyclinic',
+    category: 'vet',
+    city: 'Delhi',
+    area: 'Defence Colony',
+    phone: '+91 11 4155 8899',
+    email: 'contact@defcolpetvet.com',
+    rating: 4.8,
+    reviews_count: 42,
+    price_range: '₹₹',
+    experience_years: 15,
+    description: '24x7 emergency critical care unit with dedicated canine infectious disease isolation wards and orthopedic surgery.',
+    address: 'D-block Market, Ring Road, Defence Colony, New Delhi 110024',
+    active: true,
+    verified: true
+  },
+  {
+    id: 'sp_trainer_bengaluru_1',
+    name: 'Kavita Sundaram (Canine Mindsets)',
+    category: 'trainer',
+    city: 'Bengaluru',
+    area: 'Indiranagar',
+    phone: '+91 98450 77881',
+    email: 'kavita@caninemindsets.in',
+    rating: 5.0,
+    reviews_count: 37,
+    price_range: '₹₹',
+    experience_years: 8,
+    description: 'Certified IAABC professional dog trainer specializing in fear-free positive reinforcement, rescue dog decompression, and loose-leash walking.',
+    address: '12th Main Road, HAL 2nd Stage, Indiranagar, Bengaluru 560038',
+    active: true,
+    verified: true
+  },
+  {
+    id: 'sp_trainer_pune_1',
+    name: 'Siddharth Joshi (PawPositive Pune)',
+    category: 'trainer',
+    city: 'Pune',
+    area: 'Koregaon Park',
+    phone: '+91 91750 44556',
+    email: 'sid@pawpositivepune.com',
+    rating: 4.7,
+    reviews_count: 29,
+    price_range: '₹₹',
+    experience_years: 6,
+    description: 'Puppy socialization specialist helping first-time Indian dog parents navigate house-training, crate acclimation, and bite inhibition.',
+    address: 'Lane 7, Koregaon Park, Pune 411001',
+    active: true,
+    verified: true
+  },
+  {
+    id: 'sp_groomer_mumbai_1',
+    name: 'Pawfect Glow Mobile Grooming',
+    category: 'groomer',
+    city: 'Mumbai',
+    area: 'Andheri West',
+    phone: '+91 98199 66778',
+    email: 'care@pawfectglow.in',
+    rating: 4.8,
+    reviews_count: 64,
+    price_range: '₹₹',
+    experience_years: 7,
+    description: 'Air-conditioned mobile grooming spa equipped with warm hydrotherapy baths, gentle deshedding, sanitary trimming, and organic tick rinses.',
+    address: 'Lokhandwala Complex, Andheri West, Mumbai 400053',
+    active: true,
+    verified: true
+  },
+  {
+    id: 'sp_groomer_bengaluru_1',
+    name: 'The Suds & Tail Parlour',
+    category: 'groomer',
+    city: 'Bengaluru',
+    area: 'Koramangala',
+    phone: '+91 80 4123 9988',
+    email: 'hello@sudsandtail.com',
+    rating: 4.9,
+    reviews_count: 48,
+    price_range: '₹₹',
+    experience_years: 9,
+    description: 'Cruelty-free botanical grooming salon specializing in double-coat deshedding and gentle desensitization baths for nervous rescue dogs.',
+    address: '4th Block, 80 Feet Road, Koramangala, Bengaluru 560034',
+    active: true,
+    verified: true
+  },
+  {
+    id: 'sp_sitter_delhi_1',
+    name: 'CozyPaws Home Boarding & Sitting',
+    category: 'sitter',
+    city: 'Delhi',
+    area: 'Vasant Kunj',
+    phone: '+91 98110 33445',
+    email: 'boarding@cozypawsdelhi.in',
+    rating: 4.9,
+    reviews_count: 51,
+    price_range: '₹₹',
+    experience_years: 6,
+    description: 'Cage-free loving home boarding environment with gated garden access, continuous AC, home-cooked chicken/pumpkin meals, and daily video updates.',
+    address: 'Pocket B, Sector A, Vasant Kunj, New Delhi 110070',
+    active: true,
+    verified: true
+  },
+  {
+    id: 'sp_sitter_mumbai_1',
+    name: 'Meow & Woof Concierge Sitters',
+    category: 'sitter',
+    city: 'Mumbai',
+    area: 'Juhu',
+    phone: '+91 98200 88990',
+    email: 'concierge@meowandwoof.in',
+    rating: 5.0,
+    reviews_count: 33,
+    price_range: '₹₹₹',
+    experience_years: 5,
+    description: 'Professional in-home drop-in pet sitters providing 45-minute feeding, litter box maintenance, medication administration, and playtime.',
+    address: 'Juhu Tara Road, Near Sea Princess Hotel, Juhu, Mumbai 400049',
+    active: true,
+    verified: true
+  }
+];
+

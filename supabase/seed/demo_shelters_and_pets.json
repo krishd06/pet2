@@ -1,0 +1,176 @@
+{
+  "_metadata": {
+    "notice": "ESTIMATE ONLY - Demo rescue shelters and adoptable pets for seeding and verification.",
+    "version": "1.0",
+    "updated": "2026-10-28"
+  },
+  "shelters": [
+    {
+      "id": "shelter_cupa_blr",
+      "name": "CUPA Second Chance Sanctuary",
+      "city_name": "Bengaluru",
+      "contact_email": "adoptions@cupablr.org",
+      "contact_phone": "+91 98450 99887",
+      "description": "Pioneering companion animal rescue shelter in Bengaluru providing emergency medical rescue, foster care, and ethical adoption matching since 1991.",
+      "is_verified": true,
+      "plan": "featured"
+    },
+    {
+      "id": "shelter_yoda_mum",
+      "name": "YODA Animal Rescue Haven",
+      "city_name": "Mumbai",
+      "contact_email": "contact@yodamumbai.org",
+      "contact_phone": "+91 98200 11223",
+      "description": "Dedicated urban rehabilitation hospital and foster sanctuary in Khar West finding loving homes for abandoned and special-needs animals.",
+      "is_verified": true,
+      "plan": "featured"
+    }
+  ],
+  "pets": [
+    {
+      "shelter_id": "shelter_cupa_blr",
+      "species_slug": "dog",
+      "breed_slug": "indian-pariah-dog",
+      "name": "Sheru",
+      "age_months": 14,
+      "sex": "male",
+      "size_category": "medium",
+      "temperament_tags": ["Affectionate", "House-Trained", "Alert", "Good with Kids"],
+      "medical_notes": "Up to date on 7-in-1 and ARV vaccines. Microchipped, neutered, and clear on 4Dx blood panel.",
+      "is_vaccinated": true,
+      "is_neutered": true,
+      "photo_urls": [
+        "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&w=800&q=80"
+      ],
+      "status": "available",
+      "is_featured": true
+    },
+    {
+      "shelter_id": "shelter_cupa_blr",
+      "species_slug": "cat",
+      "breed_slug": "indian-indie-cat",
+      "name": "Mimi",
+      "age_months": 8,
+      "sex": "female",
+      "size_category": "small",
+      "temperament_tags": ["Purr Machine", "Playful", "Litter-Trained", "Apartment-Friendly"],
+      "medical_notes": "Vaccinated with Tricat Trio and Rabies. Spayed, dewormed, negative for FeLV/FIV.",
+      "is_vaccinated": true,
+      "is_neutered": true,
+      "photo_urls": [
+        "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=800&q=80"
+      ],
+      "status": "available",
+      "is_featured": true
+    },
+    {
+      "shelter_id": "shelter_cupa_blr",
+      "species_slug": "dog",
+      "breed_slug": "golden-retriever",
+      "name": "Leo",
+      "age_months": 24,
+      "sex": "male",
+      "size_category": "large",
+      "temperament_tags": ["Gentle Giant", "Loves Water", "Sociable with Dogs", "High Energy"],
+      "medical_notes": "Surrendered due to family relocation. Fully vaccinated, neutered, on preventive omega-3 joint care.",
+      "is_vaccinated": true,
+      "is_neutered": true,
+      "photo_urls": [
+        "https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=800&q=80"
+      ],
+      "status": "available",
+      "is_featured": true
+    },
+    {
+      "shelter_id": "shelter_cupa_blr",
+      "species_slug": "dog",
+      "breed_slug": "beagle",
+      "name": "Bella",
+      "age_months": 18,
+      "sex": "female",
+      "size_category": "small",
+      "temperament_tags": ["Curious Scenter", "Cuddle Bug", "Good with Kids"],
+      "medical_notes": "Rescued from illegal breeder. Fully recovered, spayed, and leash-trained.",
+      "is_vaccinated": true,
+      "is_neutered": true,
+      "photo_urls": [
+        "https://images.unsplash.com/photo-1505628346881-b72b27e84530?auto=format&fit=crop&w=800&q=80"
+      ],
+      "status": "available",
+      "is_featured": false
+    },
+    {
+      "shelter_id": "shelter_yoda_mum",
+      "species_slug": "dog",
+      "breed_slug": "rajapalayam",
+      "name": "Raja",
+      "age_months": 12,
+      "sex": "male",
+      "size_category": "large",
+      "temperament_tags": ["Loyal Guardian", "Needs Active Adopter", "Fast Learner"],
+      "medical_notes": "Healthy native hound, strong cardiac stamina, complete puppy and booster vaccines done.",
+      "is_vaccinated": true,
+      "is_neutered": true,
+      "photo_urls": [
+        "https://images.unsplash.com/photo-1568640347023-a616a30bc3bd?auto=format&fit=crop&w=800&q=80"
+      ],
+      "status": "available",
+      "is_featured": true
+    },
+    {
+      "shelter_id": "shelter_yoda_mum",
+      "species_slug": "cat",
+      "breed_slug": "persian-cat",
+      "name": "Luna",
+      "age_months": 36,
+      "sex": "female",
+      "size_category": "small",
+      "temperament_tags": ["Quiet Royalty", "Calm", "Low Energy", "Loves Sunbaths"],
+      "medical_notes": "Requires air-conditioning and daily brushing. Spayed, dental cleaning completed last month.",
+      "is_vaccinated": true,
+      "is_neutered": true,
+      "photo_urls": [
+        "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=800&q=80"
+      ],
+      "status": "available",
+      "is_featured": false
+    },
+    {
+      "shelter_id": "shelter_yoda_mum",
+      "species_slug": "dog",
+      "breed_slug": "mudhol-hound",
+      "name": "Bruno",
+      "age_months": 10,
+      "sex": "male",
+      "size_category": "medium",
+      "temperament_tags": ["High Speed", "Shy at First", "Devoted Companion"],
+      "medical_notes": "Vaccinated with 7-in-1 and Rabies, neutered, thrives with daily park runs.",
+      "is_vaccinated": true,
+      "is_neutered": true,
+      "photo_urls": [
+        "https://images.unsplash.com/photo-1544568100-847a948585b9?auto=format&fit=crop&w=800&q=80"
+      ],
+      "status": "available",
+      "is_featured": false
+    },
+    {
+      "shelter_id": "shelter_yoda_mum",
+      "species_slug": "cat",
+      "breed_slug": "indian-indie-cat",
+      "name": "Kiki",
+      "age_months": 4,
+      "sex": "female",
+      "size_category": "small",
+      "temperament_tags": ["Super Active", "Laser Chaser", "Loves Other Cats"],
+      "medical_notes": "Primary kitten vaccination completed. Neuter voucher provided by shelter for 6th month.",
+      "is_vaccinated": true,
+      "is_neutered": false,
+      "photo_urls": [
+        "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?auto=format&fit=crop&w=800&q=80"
+      ],
+      "status": "available",
+      "is_featured": true
+    }
+  ]
+}

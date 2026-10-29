@@ -95,7 +95,13 @@ export const inMemoryMongoStores = {
   RemediationTemplates: new InMemoryCollection('RemediationTemplates'),
   OnboardingGuides: new InMemoryCollection('OnboardingGuides'),
   FaqItems: new InMemoryCollection('FaqItems'),
-  AdvisorConversations: new InMemoryCollection('AdvisorConversations')
+  AdvisorConversations: new InMemoryCollection('AdvisorConversations'),
+  ClickEvents: new InMemoryCollection('ClickEvents'),
+  PetViewEvents: new InMemoryCollection('PetViewEvents'),
+  QuizSnapshots: new InMemoryCollection('QuizSnapshots'),
+  Roadmaps: new InMemoryCollection('Roadmaps'),
+  CostPlans: new InMemoryCollection('CostPlans'),
+  Reminders: new InMemoryCollection('Reminders')
 };
 
 export async function connectMongo() {

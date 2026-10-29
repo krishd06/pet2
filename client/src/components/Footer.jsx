@@ -51,6 +51,15 @@ export default function Footer() {
                 <Link to="/first-30-days" className="hover:text-brand-400 transition-colors">First 30 Days (3-3-3 Rule)</Link>
               </li>
               <li>
+                <Link to="/services" className="hover:text-brand-400 transition-colors">Services Directory</Link>
+              </li>
+              <li>
+                <Link to="/pricing" className="hover:text-brand-400 transition-colors">Plans & Pricing</Link>
+              </li>
+              <li>
+                <Link to="/for-partners" className="hover:text-brand-400 transition-colors">For Partners (B2B)</Link>
+              </li>
+              <li>
                 <Link to="/advisor" className="hover:text-brand-400 transition-colors">AI Pet Advisor</Link>
               </li>
             </ul>
@@ -88,15 +97,21 @@ export default function Footer() {
 
         </div>
 
-        {/* Bottom bar */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-sand-400 gap-4">
-          <p>© {new Date().getFullYear()} PawMatch India. Open Prototype for Urban Animal Welfare.</p>
-          <div className="flex items-center gap-6">
-            <span>Free Tier & Zero Paid Services</span>
-            <span className="text-emerald-400 font-medium flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              All Systems Operational
-            </span>
+        {/* Bottom bar with Legal & Trust Links */}
+        <div className="pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-sand-400 gap-4">
+          <p>© {new Date().getFullYear()} PawMatch India. Built for Ethical Urban Pet Parenting.</p>
+          
+          <div className="flex flex-wrap items-center gap-4 text-sand-300">
+            <Link to="/privacy" className="hover:text-brand-400 transition-colors">Privacy Policy</Link>
+            <span>•</span>
+            <Link to="/terms" className="hover:text-brand-400 transition-colors">Terms of Service</Link>
+            <span>•</span>
+            <Link to="/affiliate-disclosure" className="hover:text-brand-400 transition-colors">Affiliate Disclosure</Link>
+          </div>
+
+          <div className="flex items-center gap-2 text-emerald-400 font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>All Systems Operational</span>
           </div>
         </div>
       </div>

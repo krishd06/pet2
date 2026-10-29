@@ -12,8 +12,8 @@ const __dirname = path.dirname(__filename);
 export async function runMigrations() {
   console.log('--- Running PostgreSQL Migrations for PawMatch India ---');
   const db = getDb();
-  const migrationPath = path.join(__dirname, '../../db/migrations/001_create_tables.sql');
-  const sql = fs.readFileSync(migrationPath, 'utf8');
+  const migrationsDir = path.join(__dirname, '../../db/migrations');
+  const files = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort();
 
   if (db.isMock) {
     console.log('Using in-memory development store; schema initialized.');
@@ -21,8 +21,12 @@ export async function runMigrations() {
   }
 
   try {
-    await db.query(sql);
-    console.log('PostgreSQL migrations applied successfully on Neon Database!');
+    for (const file of files) {
+      console.log(`Applying migration: ${file}`);
+      const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
+      await db.query(sql);
+    }
+    console.log('All PostgreSQL migrations applied successfully on Neon Database!');
     return { success: true, mode: 'neon_postgres' };
   } catch (err) {
     console.error('Migration error:', err.message);

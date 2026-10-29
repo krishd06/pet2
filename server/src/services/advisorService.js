@@ -88,10 +88,19 @@ export async function sendAdvisorMessage(conversationId, userMessage, userId = n
   if (apiKey && apiKey.trim() !== '' && !apiKey.includes('placeholder')) {
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({
-        model: 'gemini-1.5-flash',
-        systemInstruction: SYSTEM_INSTRUCTION
-      });
+      const modelName = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+      let model;
+      try {
+        model = genAI.getGenerativeModel({
+          model: modelName,
+          systemInstruction: SYSTEM_INSTRUCTION
+        });
+      } catch (e) {
+        model = genAI.getGenerativeModel({
+          model: 'gemini-3.5-flash-lite',
+          systemInstruction: SYSTEM_INSTRUCTION
+        });
+      }
 
       // Format history for Gemini chat
       const chatHistory = recentHistory.map(m => ({

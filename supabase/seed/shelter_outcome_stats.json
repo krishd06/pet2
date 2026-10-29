@@ -1,0 +1,54 @@
+{
+  "_metadata": {
+    "notice": "ESTIMATE ONLY - Aggregated Indian companion shelter duration and adoption velocity statistics for verification.",
+    "version": "1.0",
+    "updated": "2026-10-28"
+  },
+  "stats": [
+    {
+      "species": "dog",
+      "age_group": "puppy (0-6m)",
+      "size_category": "medium",
+      "outcome_type": "adopted",
+      "avg_days_in_shelter": 18.5,
+      "sample_size": 420,
+      "source": "ESTIMATE - South India Rescue Shelter Consortium"
+    },
+    {
+      "species": "dog",
+      "age_group": "young adult (7-24m)",
+      "size_category": "medium",
+      "outcome_type": "adopted",
+      "avg_days_in_shelter": 42.0,
+      "sample_size": 310,
+      "source": "ESTIMATE - South India Rescue Shelter Consortium"
+    },
+    {
+      "species": "dog",
+      "age_group": "senior (7y+)",
+      "size_category": "large",
+      "outcome_type": "adopted",
+      "avg_days_in_shelter": 115.0,
+      "sample_size": 85,
+      "source": "ESTIMATE - South India Rescue Shelter Consortium"
+    },
+    {
+      "species": "cat",
+      "age_group": "kitten (0-6m)",
+      "size_category": "small",
+      "outcome_type": "adopted",
+      "avg_days_in_shelter": 14.0,
+      "sample_size": 510,
+      "source": "ESTIMATE - Urban Feline Welfare Network"
+    },
+    {
+      "species": "cat",
+      "age_group": "adult (1-6y)",
+      "size_category": "small",
+      "outcome_type": "adopted",
+      "avg_days_in_shelter": 38.0,
+      "sample_size": 240,
+      "source": "ESTIMATE - Urban Feline Welfare Network"
+    }
+  ]
+}

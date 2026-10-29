@@ -53,6 +53,7 @@ export default function QuestionnairePage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [validationError, setValidationError] = useState('');
+  const [analyticsConsent, setAnalyticsConsent] = useState(true);
 
   // 1. Fetch questionnaire definition from API
   useEffect(() => {
@@ -156,9 +157,34 @@ export default function QuestionnairePage() {
 
       const res = await api.createAssessment(answersToSubmit, guestToken);
       if (res && res.assessmentId) {
-        // Clear saved answers on successful submission
+        // If consented, log anonymized aggregate snapshot to MongoDB (non-blocking)
+        if (analyticsConsent) {
+          try {
+            const logFn = api.logQuizSnapshot || api.logConsentedQuizSnapshot;
+            if (typeof logFn === 'function') {
+              logFn({
+                city: answersToSubmit.city || 'Unknown',
+                readinessScore: res.readiness?.overallScore || 70,
+                readinessBand: res.readiness?.band || 'Ready',
+                topPetCategory: answersToSubmit.preferredSpecies || 'dog',
+                hasConsent: true,
+                answersSnapshot: {
+                  homeType: answersToSubmit.homeType,
+                  hasBalcony: answersToSubmit.hasBalcony,
+                  workHoursAway: answersToSubmit.workHoursAway,
+                  experienceLevel: answersToSubmit.experienceLevel
+                }
+              }).catch((e) => console.warn('Snapshot log ignored:', e));
+            }
+          } catch (snapshotErr) {
+            console.warn('Snapshot logging error ignored:', snapshotErr);
+          }
+        }
+
+        // Clear saved answers on successful submission and navigate to results
         localStorage.removeItem(STORAGE_KEY);
         navigate(`/results/${res.assessmentId}`);
+        return;
       }
     } catch (err) {
       console.error('Submission error:', err);
@@ -374,6 +400,23 @@ export default function QuestionnairePage() {
           <div className="bg-red-50 border border-red-200 p-3.5 rounded-2xl text-xs text-red-700 flex items-center gap-2 animate-in fade-in">
             <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
             <span>{validationError}</span>
+          </div>
+        )}
+
+        {/* Feature G: Consented Anonymized Analytics Checkbox (Final Step Only) */}
+        {currentStepIndex === steps.length - 1 && (
+          <div className="bg-sand-50/90 p-4 rounded-2xl border border-sand-200 animate-in fade-in">
+            <label className="flex items-start gap-2.5 cursor-pointer text-xs text-sand-800 leading-relaxed">
+              <input
+                type="checkbox"
+                checked={analyticsConsent}
+                onChange={(e) => setAnalyticsConsent(e.target.checked)}
+                className="accent-brand-500 w-4 h-4 rounded mt-0.5"
+              />
+              <span>
+                <strong>Anonymized Welfare Research Consent:</strong> I agree to contribute my anonymized lifestyle responses (city, apartment type, compatibility band) to urban Indian pet welfare statistics. <em>No names, emails, or personal identifiers are ever stored.</em>
+              </span>
+            </label>
           </div>
         )}
 

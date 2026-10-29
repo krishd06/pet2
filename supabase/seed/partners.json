@@ -1,0 +1,109 @@
+{
+  "_metadata": {
+    "notice": "ESTIMATE ONLY - Placeholder Indian pet ecosystem partners and brand sponsorships for demonstration.",
+    "version": "1.0",
+    "updated": "2026-10-28"
+  },
+  "partners": [
+    {
+      "name": "Supertails Nutrition Hub",
+      "category": "Food & Supplies",
+      "description": "Doorstep veterinary diet, prescription kibble, and pharmacy delivery across top Indian metros within 24 hours.",
+      "url": "https://supertails.com?ref=pawmatch",
+      "commission_note": "12% affiliate commission on first basket; 5% recurring subscription.",
+      "city_name": "Bengaluru",
+      "is_active": true,
+      "is_sponsored": true
+    },
+    {
+      "name": "Heads Up For Tails (HUFT)",
+      "category": "Lifestyle & Grooming",
+      "description": "Organic grooming shampoos, orthopedic memory-foam beds, and handcrafted artisanal dog wear.",
+      "url": "https://headsupfortails.com?ref=pawmatch",
+      "commission_note": "10% store credit on approved adopter purchases.",
+      "city_name": "Delhi NCR",
+      "is_active": true,
+      "is_sponsored": true
+    },
+    {
+      "name": "Digit Pet Insurance",
+      "category": "Health Insurance",
+      "description": "Comprehensive cashless medical cover covering emergency surgeries, major illnesses, and accidental injury.",
+      "url": "https://godigit.com/pet-insurance?ref=pawmatch",
+      "commission_note": "₹450 flat CPA per activated policy.",
+      "city_name": "Bengaluru",
+      "is_active": true,
+      "is_sponsored": true
+    },
+    {
+      "name": "Zigly Pet Care",
+      "category": "Clinical & Wellness",
+      "description": "One-stop omnichannel veterinary network with van grooming, pathology diagnostics, and wellness clinics.",
+      "url": "https://zigly.com?ref=pawmatch",
+      "commission_note": "8% revenue share on appointment bookings.",
+      "city_name": "Delhi NCR",
+      "is_active": true,
+      "is_sponsored": false
+    },
+    {
+      "name": "Wiggles Vet On Call",
+      "category": "Preventive Care",
+      "description": "Smart veterinary telemedicine consultations, anti-tick spray subscriptions, and behavioral coaching.",
+      "url": "https://wiggles.in?ref=pawmatch",
+      "commission_note": "₹150 per telehealth consultation session.",
+      "city_name": "Pune",
+      "is_active": true,
+      "is_sponsored": false
+    },
+    {
+      "name": "Barkbutler India",
+      "category": "Toys & Enrichment",
+      "description": "Durable puzzle feeders, natural coffee wood chews, and interactive rubber toys designed for power chewers.",
+      "url": "https://barkbutler.com?ref=pawmatch",
+      "commission_note": "12% affiliate commission.",
+      "city_name": "Mumbai",
+      "is_active": true,
+      "is_sponsored": false
+    },
+    {
+      "name": "Pawfect Life Boarding Resort",
+      "category": "Boarding & Daycare",
+      "description": "Cage-free resort boarding with private splash pools, lawn runs, and 24x7 web-cam access for pet parents.",
+      "url": "https://pawfectlife.in?ref=pawmatch",
+      "commission_note": "10% booking commission.",
+      "city_name": "Mumbai",
+      "is_active": true,
+      "is_sponsored": false
+    },
+    {
+      "name": "PetGas Station Fresh Meals",
+      "category": "Fresh Diet",
+      "description": "Slow-cooked, human-grade chicken and paneer bowl subscriptions customized to dog weight and age.",
+      "url": "https://petgasstation.in?ref=pawmatch",
+      "commission_note": "15% on first monthly plan subscription.",
+      "city_name": "Hyderabad",
+      "is_active": true,
+      "is_sponsored": false
+    },
+    {
+      "name": "Furry Tales Relocation & Travel",
+      "category": "Pet Relocation",
+      "description": "DGCA compliant flight crates, railway pet reservations, and inter-state pet cab transport assistance.",
+      "url": "https://furrytales.in?ref=pawmatch",
+      "commission_note": "5% relocation fee referral.",
+      "city_name": "Chennai",
+      "is_active": true,
+      "is_sponsored": false
+    },
+    {
+      "name": "Doggie Dabbey Home Meals",
+      "category": "Fresh Diet",
+      "description": "Ready-to-eat balanced wet meals, pumpkin toppers, and liver training treats.",
+      "url": "https://doggiedabbey.com?ref=pawmatch",
+      "commission_note": "10% commission on subscription bundles.",
+      "city_name": "Delhi NCR",
+      "is_active": true,
+      "is_sponsored": false
+    }
+  ]
+}

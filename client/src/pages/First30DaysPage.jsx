@@ -14,6 +14,7 @@ import {
   ExternalLink,
   ChevronRight
 } from 'lucide-react';
+import PartnerRecommendations from '../components/PartnerRecommendations.jsx';
 
 export default function First30DaysPage() {
   const { guestToken } = useAuth();
@@ -267,6 +268,15 @@ export default function First30DaysPage() {
           </div>
         )}
       </section>
+
+      {/* Recommended for You: Onboarding & Decompression Essentials (Feature B) */}
+      <PartnerRecommendations
+        species={species}
+        sourcePage="first_30_days"
+        limit={4}
+        title="Recommended Decompression & Care Essentials"
+        subtitle="Vetted Indian partner services for crates, calming beds, herbal tick care, and doorstep vaccinations."
+      />
 
       {/* 3. Emergency 24x7 Vet Directory */}
       <section className="bg-white rounded-3xl p-6 sm:p-8 border border-sand-200 shadow-card space-y-6">

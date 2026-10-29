@@ -1,0 +1,9 @@
+﻿Species,Breed,Origin,Size,Wt(kg),Ht(cm),Lifespan,Energy(1-5),Exer(min),Train(1-5),Intel(1-5),Shed(1-5),Groom(1-5),Noise(1-5),HeatTol(1-5),ColdTol(1-5),Kids(1-5),Pets(1-5),Strangers(1-5),SepAnx(1-5),1stTime(1-5),Apt(1-5),Health Issues,VetCost/Yr(₹),Price(₹),Avail,Temperament
+Dog,Indie,India,Med,15-25,50-60,13-16,4,60,4,4,2,1,3,5,3,4,4,3,2,4,4,"Tick fever, Gastro",3k-5k,Adoption,Common,"Resilient, territorial, highly adaptable"
+Dog,Labrador,Canada,Large,25-36,55-62,10-12,4,60,5,5,4,2,3,2,4,5,5,5,4,5,3,"Hip dysplasia, Obesity",5k-8k,10k-20k,Common,"Eager to please, friendly, food-motivated"
+Dog,Siberian Husky,Siberia,Large,20-27,50-60,12-14,5,90+,3,4,5,4,4,1,5,4,3,4,4,1,2,"Thermal stress, Cataracts",10k-15k,30k-50k,Common,"High-energy, independent, vocal (howls)"
+Dog,Beagle,UK,Med,9-11,33-41,12-15,4,60,3,4,3,2,5,3,3,5,4,4,4,3,3,"Ear infections, Obesity",4k-6k,15k-25k,Common,"Merry, stubborn, driven by scent"
+Dog,Pug,China,Small,6-8,25-30,12-15,2,20,3,3,4,3,2,1,3,4,4,4,4,4,5,"BOAS (breathing), Eye issues",5k-8k,15k-20k,Common,"Charming, lazy, severely heat-intolerant"
+Cat,Dom. Shorthair,Mixed,Med,3-5,20-25,12-15,3,20,3,4,2,1,2,4,3,3,4,3,2,5,5,Kidney disease (old age),2k-4k,Adoption,Common,"Independent, hardy, varied personalities"
+Cat,Persian,Iran,Med,3-5,20-25,12-15,1,15,2,3,5,5,1,1,4,2,3,3,3,3,5,"PKD, Respiratory distress",6k-10k,15k-25k,Common,"Placid, sweet, requires constant AC"
+Rabbit,Mini Lop,Germany,Small,1.5-3,15-20,8-12,3,60,3,3,3,2,1,2,4,3,3,2,3,4,4,"GI Stasis, Dental issues",3k-5k,2k-4k,Common,"Docile, easily startled, fragile spine"

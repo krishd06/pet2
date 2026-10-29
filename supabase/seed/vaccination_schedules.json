@@ -1,0 +1,72 @@
+{
+  "_metadata": {
+    "notice": "ESTIMATE ONLY - Standard Indian Small Animal Veterinary Association (ISAVA) immunization protocol.",
+    "version": "1.0",
+    "updated": "2026-10-28"
+  },
+  "vaccination_schedules": [
+    {
+      "species_slug": "dog",
+      "vaccine_name": "DHPPi / 7-in-1 Primary",
+      "protects_against": "Canine Distemper, Hepatitis, Parvovirus, Parainfluenza",
+      "first_dose_age_weeks": 6,
+      "booster_interval_weeks": 3,
+      "is_core": true,
+      "notes": "Essential puppy primary series. Follow with boosters at 9, 12, and 16 weeks, then annually."
+    },
+    {
+      "species_slug": "dog",
+      "vaccine_name": "Anti-Rabies Vaccine (ARV)",
+      "protects_against": "Rabies Virus",
+      "first_dose_age_weeks": 12,
+      "booster_interval_weeks": 52,
+      "is_core": true,
+      "notes": "Legally mandatory under Indian municipal corporation pet licensing regulations. Annual booster required."
+    },
+    {
+      "species_slug": "dog",
+      "vaccine_name": "Canine Coronavirus (CCV)",
+      "protects_against": "Canine Enteric Coronavirus",
+      "first_dose_age_weeks": 8,
+      "booster_interval_weeks": 52,
+      "is_core": false,
+      "notes": "Recommended for multi-dog homes, shelters, and daycare boarders."
+    },
+    {
+      "species_slug": "dog",
+      "vaccine_name": "Kennel Cough (Bordetella bronchiseptica)",
+      "protects_against": "Infectious Tracheobronchitis",
+      "first_dose_age_weeks": 10,
+      "booster_interval_weeks": 52,
+      "is_core": false,
+      "notes": "Administered intranasally or subcutaneously prior to social boarding or dog park visits."
+    },
+    {
+      "species_slug": "cat",
+      "vaccine_name": "FVRCP / Tricat Trio",
+      "protects_against": "Feline Viral Rhinotracheitis, Calicivirus, Panleukopenia (Feline Distemper)",
+      "first_dose_age_weeks": 8,
+      "booster_interval_weeks": 4,
+      "is_core": true,
+      "notes": "Core feline protection. Primary at 8 weeks, booster at 12 and 16 weeks, then annually."
+    },
+    {
+      "species_slug": "cat",
+      "vaccine_name": "Feline Rabies Vaccine",
+      "protects_against": "Rabies Virus",
+      "first_dose_age_weeks": 12,
+      "booster_interval_weeks": 52,
+      "is_core": true,
+      "notes": "Crucial preventive injection for indoor-outdoor cats across Indian cities."
+    },
+    {
+      "species_slug": "cat",
+      "vaccine_name": "Feline Leukemia Virus (FeLV)",
+      "protects_against": "FeLV Retro-infection",
+      "first_dose_age_weeks": 10,
+      "booster_interval_weeks": 52,
+      "is_core": false,
+      "notes": "Recommended after ELISA antibody test for cats with balcony or compound roaming access."
+    }
+  ]
+}

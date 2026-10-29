@@ -1,0 +1,252 @@
+{
+  "_metadata": {
+    "notice": "ESTIMATE ONLY - Questionnaire questions and option trait score weights calibrated for Indian urban households.",
+    "version": "1.0",
+    "updated": "2026-10-28"
+  },
+  "questions": [
+    {
+      "sort_order": 1,
+      "text": "What type of home do you reside in?",
+      "type": "single",
+      "category": "living_space",
+      "options": [
+        {
+          "label": "Compact Studio / 1BHK Apartment (< 600 sq ft)",
+          "value": "apartment_compact",
+          "trait_weights": {
+            "apartment_friendly_score": 2,
+            "energy_level": -1,
+            "barking_level": -1
+          },
+          "filters": {
+            "max_weight_kg": 15,
+            "requires_yard": false
+          }
+        },
+        {
+          "label": "Standard 2BHK Apartment (650 - 1100 sq ft)",
+          "value": "apartment_standard",
+          "trait_weights": {
+            "apartment_friendly_score": 1,
+            "adaptability_level": 1
+          },
+          "filters": {
+            "max_weight_kg": 30,
+            "requires_yard": false
+          }
+        },
+        {
+          "label": "Spacious 3BHK+ / Penthouse (1200+ sq ft)",
+          "value": "apartment_large",
+          "trait_weights": {
+            "energy_level": 1,
+            "apartment_friendly_score": 1
+          },
+          "filters": {}
+        },
+        {
+          "label": "Independent Villa / Bungalow with private yard",
+          "value": "independent_villa",
+          "trait_weights": {
+            "energy_level": 2,
+            "protective_nature": 1,
+            "playfulness_level": 1
+          },
+          "filters": {}
+        }
+      ]
+    },
+    {
+      "sort_order": 2,
+      "text": "How much active outdoor exercise time can you dedicate daily?",
+      "type": "single",
+      "category": "activity",
+      "options": [
+        {
+          "label": "Less than 30 minutes (Leisurely balcony time / short walk)",
+          "value": "exercise_low",
+          "trait_weights": {
+            "energy_level": -2,
+            "apartment_friendly_score": 1
+          },
+          "filters": {
+            "max_energy_level": 2
+          }
+        },
+        {
+          "label": "30 to 60 minutes (Two brisk neighborhood walks)",
+          "value": "exercise_medium",
+          "trait_weights": {
+            "energy_level": 0,
+            "playfulness_level": 1
+          },
+          "filters": {}
+        },
+        {
+          "label": "60 to 90 minutes (Play sessions, jogging, park visits)",
+          "value": "exercise_high",
+          "trait_weights": {
+            "energy_level": 1,
+            "trainability_level": 1,
+            "mental_stimulation_needs": 1
+          },
+          "filters": {}
+        },
+        {
+          "label": "2+ hours (Marathons, agility training, open runs)",
+          "value": "exercise_extreme",
+          "trait_weights": {
+            "energy_level": 2,
+            "mental_stimulation_needs": 2
+          },
+          "filters": {}
+        }
+      ]
+    },
+    {
+      "sort_order": 3,
+      "text": "How many hours will the pet typically remain alone at home on weekdays?",
+      "type": "single",
+      "category": "time_commitment",
+      "options": [
+        {
+          "label": "Never / Work from Home full-time (0 - 2 hours)",
+          "value": "alone_minimal",
+          "trait_weights": {
+            "affectionate_with_family": 1
+          },
+          "filters": {}
+        },
+        {
+          "label": "2 to 4 hours (Hybrid work or family members at home)",
+          "value": "alone_moderate",
+          "trait_weights": {
+            "adaptability_level": 1
+          },
+          "filters": {}
+        },
+        {
+          "label": "5 to 8 hours (Standard Indian office commute)",
+          "value": "alone_long",
+          "trait_weights": {
+            "adaptability_level": 2,
+            "barking_level": -1
+          },
+          "filters": {
+            "requires_low_separation_anxiety": true
+          }
+        }
+      ]
+    },
+    {
+      "sort_order": 4,
+      "text": "What is your comfort level with coat brushing, fur shedding, and vacuuming?",
+      "type": "single",
+      "category": "grooming",
+      "options": [
+        {
+          "label": "Minimal shedding preferred / Allergies in family",
+          "value": "shedding_minimal",
+          "trait_weights": {
+            "shedding_level": -2,
+            "coat_grooming_frequency": -1
+          },
+          "filters": {
+            "max_shedding_level": 2
+          }
+        },
+        {
+          "label": "Moderate shedding is okay with weekly brushing",
+          "value": "shedding_moderate",
+          "trait_weights": {
+            "shedding_level": 0
+          },
+          "filters": {}
+        },
+        {
+          "label": "Don't mind heavy shedding / daily brushing",
+          "value": "shedding_heavy",
+          "trait_weights": {
+            "shedding_level": 2,
+            "coat_grooming_frequency": 2
+          },
+          "filters": {}
+        }
+      ]
+    },
+    {
+      "sort_order": 5,
+      "text": "Does your household include toddlers, young children, or senior citizens?",
+      "type": "single",
+      "category": "household_fit",
+      "options": [
+        {
+          "label": "Yes, young children below 7 years",
+          "value": "has_young_children",
+          "trait_weights": {
+            "good_with_young_children": 2,
+            "playfulness_level": 1,
+            "protective_nature": -1
+          },
+          "filters": {
+            "min_good_with_young_children": 4
+          }
+        },
+        {
+          "label": "Elderly seniors living together",
+          "value": "has_seniors",
+          "trait_weights": {
+            "energy_level": -1,
+            "affectionate_with_family": 1,
+            "barking_level": -1
+          },
+          "filters": {
+            "max_energy_level": 3
+          }
+        },
+        {
+          "label": "Adults only / Independent working couple",
+          "value": "adults_only",
+          "trait_weights": {
+            "trainability_level": 1
+          },
+          "filters": {}
+        }
+      ]
+    },
+    {
+      "sort_order": 6,
+      "text": "What is your expected monthly recurring maintenance budget for pet care?",
+      "type": "single",
+      "category": "budget",
+      "options": [
+        {
+          "label": "Under ₹3,000 / month (Affordable, resilient native pet)",
+          "value": "budget_tier_low",
+          "trait_weights": {
+            "heat_tolerance": 2,
+            "coat_grooming_frequency": -1
+          },
+          "filters": {
+            "prefer_native": true
+          }
+        },
+        {
+          "label": "₹3,000 to ₹7,000 / month (Medium dog or premium cat food & vet)",
+          "value": "budget_tier_mid",
+          "trait_weights": {},
+          "filters": {}
+        },
+        {
+          "label": "₹7,000 to ₹15,000+ / month (Large breed diet, routine salon grooming, pet insurance)",
+          "value": "budget_tier_high",
+          "trait_weights": {
+            "energy_level": 1
+          },
+          "filters": {}
+        }
+      ]
+    }
+  ]
+}

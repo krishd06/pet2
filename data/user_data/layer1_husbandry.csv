@@ -1,0 +1,55 @@
+﻿Animal,Breed,Lifespan,Daily Time Needed,Min Space Needed,Noise (1-5),Monthly Cost (₹),Apt Suitability (1-5),Left Alone (hrs),Kid-Friendly (1-5),Exotic Vet Needed?,Legal Status in India
+Dog,Indie / Indian Pariah,13–16 yrs,2–3 hrs,Medium,3,"₹2,000–₹4,000",4,4–6,4,No,Legal. Highly suited for Indian climate.
+Dog,Labrador Retriever,10–12 yrs,2–4 hrs,Large,3,"₹4,000–₹7,000",3,4–6,5,No,Legal.
+Dog,Golden Retriever,10–12 yrs,2–4 hrs,Large,3,"₹4,000–₹7,000",3,4–6,5,No,Legal.
+Dog,German Shepherd,10–13 yrs,3–4 hrs,Large,4,"₹5,000–₹8,000",2,4–6,4,No,Legal. High exercise requirement.
+Dog,Rottweiler,9–10 yrs,2–3 hrs,Large,3,"₹5,000–₹8,000",2,4–6,3,No,Legal. Strict socialization needed; some RWA limits.
+Dog,Doberman Pinscher,10–12 yrs,3–4 hrs,Large,3,"₹4,000–₹7,000",2,4–6,4,No,Legal.
+Dog,Boxer,10–12 yrs,2–3 hrs,Large,3,"₹4,000–₹7,000",3,4–6,5,No,Legal.
+Dog,Dalmatian,10–13 yrs,2–3 hrs,Large,3,"₹3,000–₹6,000",3,4–6,4,No,Legal. High energy.
+Dog,Shih Tzu,10–16 yrs,1–2 hrs,Small,2,"₹3,000–₹6,000",5,4–6,3,No,Legal. Requires AC & high grooming.
+Dog,Beagle,12–15 yrs,2–3 hrs,Medium,5,"₹3,000–₹5,000",3,4–6,4,No,Legal. Highly vocal (howling).
+Dog,Pug,12–15 yrs,1–2 hrs,Small,2,"₹3,000–₹5,000",5,4–6,4,No,Legal. High risk of heatstroke in India.
+Dog,French Bulldog,10–12 yrs,1–2 hrs,Small,2,"₹4,000–₹8,000",5,4–6,4,No,Legal. Severe heatstroke risk; AC mandatory.
+Dog,Pomeranian,12–16 yrs,1–2 hrs,Small,5,"₹2,000–₹4,000",5,4–6,3,No,Legal. Highly vocal.
+Dog,Dachshund,12–16 yrs,1–2 hrs,Small,4,"₹2,000–₹4,000",5,4–6,3,No,Legal. Spine precautions necessary.
+Dog,Cocker Spaniel,10–14 yrs,2–3 hrs,Medium,3,"₹3,000–₹6,000",4,4–6,5,No,Legal. High grooming needs.
+Dog,Siberian Husky,12–14 yrs,3–4 hrs,Large (AC Mandatory),4,"₹6,000–₹10,000",2,4,3,No,Legal. Prone to severe thermal stress in India.
+Cat,Domestic Shorthair (Indie),12–15 yrs,1–2 hrs,Medium (Vertical space),2,"₹1,500–₹3,000",5,8–10,3,No,Legal.
+Cat,Persian,12–15 yrs,1–2 hrs,Medium (Vertical space),1,"₹3,000–₹5,000",5,8–10,3,No,Legal. Requires AC & daily grooming.
+Cat,Siamese,12–15 yrs,2 hrs,Medium (Vertical space),4,"₹2,000–₹4,000",4,6–8,3,No,Legal. Highly vocal and social.
+Cat,Maine Coon,12–15 yrs,2 hrs,Large (Vertical space),2,"₹4,000–₹7,000",4,6–8,3,No,Legal. Needs large space and thermal management.
+Cat,Bengal Cat,12–16 yrs,2–3 hrs,Large (Vertical space),3,"₹3,000–₹5,000",3,6–8,3,No,"Legal. High energy, needs intense enrichment."
+Cat,British Shorthair,12–20 yrs,1–2 hrs,Medium (Vertical space),1,"₹3,000–₹5,000",5,8–10,4,No,Legal.
+Cat,Ragdoll,12–15 yrs,1–2 hrs,Large (Indoor only),1,"₹3,000–₹6,000",5,6–8,5,No,Legal. AC recommended.
+Cat,Bombay Cat,12–16 yrs,1–2 hrs,Medium (Vertical space),3,"₹1,500–₹3,000",5,8–10,4,No,Legal.
+Rabbit,Mini Lop,8–12 yrs,2–3 hrs,Large enclosure (Free roam),1,"₹1,500–₹3,000",4,6–8,3,Yes,Legal (Domestic breeds only).
+Rabbit,Flemish Giant,8–10 yrs,2–3 hrs,Very Large (Room/Free roam),1,"₹2,500–₹4,500",3,6–8,4,Yes,Legal (Domestic breeds only).
+Rabbit,Dutch,5–8 yrs,2–3 hrs,Large enclosure (Free roam),1,"₹1,500–₹3,000",4,6–8,3,Yes,Legal (Domestic breeds only).
+Guinea Pig,American (Shorthair),5–8 yrs,1–2 hrs,8 sq. ft. min (Must be paired),3,"₹1,500–₹2,500",4,6–8,4,Yes,Legal. Must be kept in conspecific pairs.
+Guinea Pig,Peruvian (Longhair),5–8 yrs,2 hrs,8 sq. ft. min (Must be paired),3,"₹2,000–₹3,000",4,6–8,3,Yes,Legal. High grooming needs; must be paired.
+Hamster,Syrian,2–3 yrs,0.5–1 hr,450 sq. in. unbroken floor,1,"₹500–₹1,200",5,12–24,2,Yes,Legal. Strict solitary housing required.
+Hamster,Winter White Dwarf,1.5–2 yrs,0.5–1 hr,450 sq. in. unbroken floor,1,"₹500–₹1,200",5,12–24,2,Yes,Legal. Usually solitary.
+Hamster,Roborovski Dwarf,2–3 yrs,0.5 hr,450 sq. in. unbroken floor,1,"₹500–₹1,200",5,12–24,1,Yes,"Legal. Very fast, not for handling."
+Bird,Budgerigar (Budgie),5–10 yrs,2–3 hrs,Large flight cage,4,"₹500–₹1,500",3,4–6,3,Yes,Legal (Non-native).
+Bird,Cockatiel,10–15 yrs,2–3 hrs,Large flight cage,4,"₹1,000–₹2,000",3,4–6,3,Yes,Legal (Non-native).
+Bird,Lovebird (Peach-faced),10–15 yrs,2–3 hrs,Large flight cage,4,"₹1,000–₹2,000",3,4–6,3,Yes,Legal (Non-native).
+Bird,Zebra Finch,5–9 yrs,0.5–1 hr,Flight cage (Horizontal),2,"₹500–₹1,000",5,8–10,2,Yes,Legal (Non-native). Do best in pairs/flocks.
+Bird,Green-cheeked Conure,10–15 yrs,3–4 hrs,Large flight cage + outside time,3,"₹1,500–₹3,000",3,4–6,3,Yes,Legal (Non-native). PARIVESH 2.0 registration mandatory (CITES App II).
+Bird,Sun Conure,15–30 yrs,3–4 hrs,Large flight cage + outside time,5,"₹2,000–₹4,000",2,4–6,3,Yes,"Legal (Non-native). Extremely loud, poor for apartments."
+Bird,African Grey Parrot,40–60 yrs,4–5 hrs,Large cage / Aviary,4,"₹3,000–₹6,000",2,4–6,2,Yes,Legal (Non-native). PARIVESH 2.0 registration mandatory.
+Bird,Blue & Gold Macaw,30–50+ yrs,4–5 hrs,Massive Aviary,5,"₹5,000–₹10,000",1,4–6,2,Yes,Legal (Non-native). PARIVESH 2.0 registration mandatory.
+Fish,Betta (Siamese Fighting),2–5 yrs,0.5 hrs,5–10 gallons (Heated/Filtered),1,"₹500–₹1,000",5,24+,2,No,Legal. Strict solitary housing for males.
+Fish,Fancy Goldfish,10–15 yrs,0.5 hrs,30+ gallons (High filtration),1,"₹1,000–₹2,000",4,24+,2,No,Legal. Massive bio-load requires large tanks.
+Fish,Guppy,2–3 yrs,0.5 hrs,10+ gallons (Filtered),1,"₹500–₹1,000",5,24+,3,No,Legal. Breeds rapidly.
+Fish,Neon Tetra,2–5 yrs,0.5 hrs,15+ gallons (School of 6+),1,"₹500–₹1,000",5,24+,2,No,Legal. Schooling fish.
+Fish,Angelfish,10–12 yrs,0.5 hrs,55+ gallons (Heated/Filtered),1,"₹1,000–₹2,000",4,24+,2,No,Legal. Needs tall tanks.
+Fish,Oscar,10–20 yrs,0.5 hrs,75+ gallons (High filtration),1,"₹1,500–₹3,000",3,24+,2,No,Legal. Highly territorial cichlid.
+Reptile,Leopard Gecko,15–20 yrs,0.5–1 hr,20+ gallons (Long),1,"₹1,000–₹2,000",5,12–24,3,Yes,Legal (Non-native). Requires live insect diet.
+Reptile,Bearded Dragon,10–15 yrs,1–2 hrs,75+ gallons,1,"₹2,000–₹4,000",4,10–12,4,Yes,Legal (Non-native). High UVB and heat requirements.
+Reptile,Ball Python,20–30 yrs,0.5 hr,40–120 gallons,1,"₹1,500–₹3,000",5,24–48,2,Yes,Legal (Non-native). PARIVESH 2.0 registration mandatory (CITES App II).
+Reptile,Corn Snake,15–20 yrs,0.5 hr,40+ gallons,1,"₹1,000–₹2,500",5,24–48,3,Yes,Legal (Non-native). Escape artist; requires secure lid.
+Turtle,Red-eared Slider,20–30 yrs,1 hr,75+ gallons (Water + Basking),1,"₹1,500–₹3,000",3,12–24,2,Yes,Legal but Highly Invasive. Ecologically discouraged.
+Exotic Mammal,Ferret (Standard),6–8 yrs,3–4 hrs,Large multi-level cage,2,"₹6,000–₹12,000",3,4–6,2,Yes,Restricted. Requires special import permits (DGFT); highly regulated.
+Exotic Mammal,Sugar Glider (Standard),10–12 yrs,3+ hrs,Tall arboreal cage,3,"₹2,000–₹5,000",3,4 (Needs buddy),2,Yes,Legal (Non-native). PARIVESH 2.0 registration advised.
+Exotic Mammal,African Pygmy Hedgehog,3–5 yrs,1 hr,4 sq. ft. minimum (Heated),1,"₹1,500–₹3,000",5,12,2,Yes,Legal (Non-native). Must be distinct from illegal native hedgehogs.

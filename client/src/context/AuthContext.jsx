@@ -50,6 +50,17 @@ export function AuthProvider({ children }) {
     initAuth();
   }, []);
 
+  async function refreshUser() {
+    try {
+      const res = await api.getMe();
+      if (res && res.user) {
+        setUser(res.user);
+      }
+    } catch (e) {
+      console.warn('Failed to refresh user:', e.message);
+    }
+  }
+
   async function login(email, password) {
     const res = await api.login({ email, password });
     if (res && res.token && res.user) {
@@ -59,8 +70,15 @@ export function AuthProvider({ children }) {
     }
   }
 
-  async function register(name, email, password) {
-    const res = await api.register({ name, email, password });
+  async function register(arg1, arg2, arg3) {
+    let payload = {};
+    if (typeof arg1 === 'object') {
+      payload = arg1;
+    } else {
+      payload = { name: arg1, email: arg2, password: arg3, role: 'adopter' };
+    }
+
+    const res = await api.register(payload);
     if (res && res.token && res.user) {
       localStorage.setItem('pawmatch_token', res.token);
       setUser(res.user);
@@ -79,9 +97,13 @@ export function AuthProvider({ children }) {
     loading,
     isAuthenticated: Boolean(user),
     isAdmin: user?.role === 'admin',
+    isShelter: user?.role === 'shelter',
+    isAdopter: user?.role === 'adopter',
+    isPremium: Boolean(user?.isPremium),
     login,
     register,
-    logout
+    logout,
+    refreshUser
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

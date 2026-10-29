@@ -1,0 +1,4 @@
+﻿Species,Breed,Origin,Cage Size,Lifespan,Energy(1-5),Talking(1-5),Intel(1-5),Mess(1-5),Noise(1-5),HeatTol(1-5),ColdTol(1-5),Kids(1-5),SepAnx(1-5),1stTime(1-5),Apt(1-5),Health Issues,VetCost(₹),Price(₹),Avail,Temperament
+Bird,Budgerigar,Australia,"24x18x18""",5-10,4,3,3,3,4,4,2,4,3,5,3,"Tumors, Mites",1k-2k,500-1k,Common,"Cheerful, social, active"
+Bird,Cockatiel,Australia,"24x24x36""",10-15,3,2,3,4,4,4,2,4,4,4,3,"Egg binding, Respiratory",2k-4k,2k-4k,Common,"Affectionate, loves head scratches"
+Bird,African Grey,Africa,"36x24x48""",40-60,3,5,5,4,3,3,2,2,5,1,2,"Feather plucking, Calcium",5k-10k,80k-1.5L,Rare,"Genius-level intellect, highly sensitive"

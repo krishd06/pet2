@@ -46,8 +46,13 @@ app.use('/api', limiter);
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
+import { trackOutboundClick } from '../src/controllers/partnersController.js';
+
 // Global authentication extractor (populates req.user or req.guest)
 app.use(authenticateToken);
+
+// Outbound affiliate redirect route: /go/:partnerId
+app.get('/go/:partnerId', trackOutboundClick);
 
 // Wire API routes under /api
 app.use('/api', routes);
@@ -74,15 +79,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error occurred', message: err.message });
 });
 
-// Auto-seed in-memory store if tables are empty
+// Auto-seed and migrate database automatically on first start
 let isInitialized = false;
 async function initializeApp() {
   if (isInitialized) return;
   try {
-    const db = getDb();
-    if (db.isMock) {
-      await seedAll();
-    }
+    await seedAll();
     isInitialized = true;
   } catch (err) {
     console.warn('Startup initialization note:', err.message);

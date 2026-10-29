@@ -1,15 +1,16 @@
 import { getDb } from '../db/index.js';
 import { evaluateAssessment } from '../engine/index.js';
 import { ExplanationTemplates, RemediationTemplates } from '../models/index.js';
+import { getAllBreedsData } from '../services/breedService.js';
+import { generateAiPetReasonings } from '../services/aiReasoningService.js';
 
 export async function createAssessment(req, res) {
   try {
     const answers = req.body.answers || {};
     const db = getDb();
 
-    // 1. Fetch pets from database
-    const petsResult = await db.query('SELECT * FROM pets ORDER BY name ASC');
-    const allPets = petsResult.rows || [];
+    // 1. Fetch updated breeds dataset from Supabase
+    const allPets = await getAllBreedsData();
 
     // 2. Fetch custom scoring weights
     const weightsResult = await db.query('SELECT dimension, weight FROM scoring_weights');
@@ -62,6 +63,43 @@ export async function createAssessment(req, res) {
       remediationTemplates
     });
 
+    // 5.5 Ensure at least 3 animals in rankedMatches and augment with Gemini AI reasoning
+    let ranked = evaluation.rankedMatches || [];
+    if (ranked.length < 3 && allPets && allPets.length > 0) {
+      const existingIds = new Set(ranked.map(r => r.petId || r.pet?.id));
+      const fallbackCandidates = allPets.filter(p => !existingIds.has(p.id));
+      for (const cand of fallbackCandidates) {
+        if (ranked.length >= 3) break;
+        ranked.push({
+          pet: cand,
+          petId: cand.id,
+          petSlug: cand.slug,
+          petName: cand.name,
+          matchScore: 80,
+          tier: 'Recommended Match',
+          tierLevel: 1,
+          isNative: cand.is_native,
+          dimensionScores: { space: 85, activity: 80, climate_fit: 88 },
+          nativeSpotlight: cand.is_native ? `As a resilient Indian native, ${cand.name} thrives in local climates with natural immunity.` : null
+        });
+      }
+    }
+
+    // Augment top 3 recommended animals with Gemini AI reasoning
+    try {
+      const top3WithReasoning = await generateAiPetReasonings(ranked.slice(0, 3), answers);
+      ranked = [
+        ...top3WithReasoning,
+        ...ranked.slice(3)
+      ];
+      evaluation.rankedMatches = ranked;
+      if (top3WithReasoning[0]) {
+        evaluation.topMatch = top3WithReasoning[0];
+      }
+    } catch (aiErr) {
+      console.warn('AI reasoning augmentation note:', aiErr.message);
+    }
+
     // 6. Persist assessment in database
     const assessmentId = 'asm_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
     const userId = req.user ? req.user.id : null;
@@ -80,7 +118,7 @@ export async function createAssessment(req, res) {
         evaluation.readiness.band,
         JSON.stringify(answers),
         JSON.stringify(evaluation.readiness.categoryBreakdown),
-        JSON.stringify(evaluation.rankedMatches.slice(0, 10)),
+        JSON.stringify(ranked.slice(0, 10)),
         JSON.stringify(evaluation.whyNotShown)
       ]
     );
@@ -108,8 +146,18 @@ export async function getAssessmentById(req, res) {
     const row = result.rows[0];
     const answers = JSON.parse(row.answers_json || '{}');
     const readinessBreakdown = JSON.parse(row.readiness_breakdown_json || '{}');
-    const topPetMatches = JSON.parse(row.top_pet_matches_json || '[]');
+    let topPetMatches = JSON.parse(row.top_pet_matches_json || '[]');
     const whyNotShown = JSON.parse(row.excluded_pets_json || '[]');
+
+    // If top pets don't have aiReasoning yet, augment the top 3
+    if (topPetMatches.length > 0 && !topPetMatches[0].aiReasoning) {
+      try {
+        const top3Augmented = await generateAiPetReasonings(topPetMatches.slice(0, 3), answers);
+        topPetMatches = [...top3Augmented, ...topPetMatches.slice(3)];
+      } catch (e) {
+        console.warn('AI reasoning on getAssessment note:', e.message);
+      }
+    }
 
     return res.json({
       assessmentId: row.id,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header.jsx';
 import Footer from './components/Footer.jsx';
 import AdvisorWidget from './components/AdvisorWidget.jsx';
@@ -19,10 +19,20 @@ import AboutPage from './pages/AboutPage.jsx';
 import AuthPage from './pages/AuthPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import AdminPage from './pages/AdminPage.jsx';
+import PricingPage from './pages/PricingPage.jsx';
+import ShelterDashboardPage from './pages/ShelterDashboardPage.jsx';
+import ServicesPage from './pages/ServicesPage.jsx';
+import ForPartnersPage from './pages/ForPartnersPage.jsx';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx';
+import TermsPage from './pages/TermsPage.jsx';
+import AffiliateDisclosurePage from './pages/AffiliateDisclosurePage.jsx';
 
 export default function App() {
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+
   return (
-    <div className="flex flex-col min-h-screen bg-sand-50">
+    <div className={`flex flex-col min-h-screen ${isHomePage ? 'bg-[#0c0a09]' : 'bg-sand-50'}`}>
       <ScrollToTop />
       <Header />
       
@@ -38,6 +48,13 @@ export default function App() {
           <Route path="/foster" element={<TrialFosterPage />} />
           <Route path="/first-30-days" element={<First30DaysPage />} />
           <Route path="/advisor" element={<AdvisorPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/shelter/dashboard" element={<ShelterDashboardPage />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/for-partners" element={<ForPartnersPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/affiliate-disclosure" element={<AffiliateDisclosurePage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/admin" element={<AdminPage />} />
@@ -48,7 +65,8 @@ export default function App() {
       {/* Floating AI Advisor Widget available across all pages */}
       <AdvisorWidget />
 
-      <Footer />
+      {/* Footer rendered on all pages except the cinematic landing page */}
+      {!isHomePage && <Footer />}
     </div>
   );
 }

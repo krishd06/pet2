@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import {
@@ -10,7 +11,8 @@ import {
   HelpCircle,
   Award,
   ShieldCheck,
-  RotateCcw
+  RotateCcw,
+  Lock
 } from 'lucide-react';
 
 const SUGGESTED_QUESTIONS = [
@@ -21,7 +23,7 @@ const SUGGESTED_QUESTIONS = [
 ];
 
 export default function AdvisorPage() {
-  const { user } = useAuth();
+  const { user, isPremium } = useAuth();
   const [messages, setMessages] = useState([
     {
       role: 'model',
@@ -31,6 +33,8 @@ export default function AdvisorPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [conversationId, setConversationId] = useState(null);
+  const [quotaInfo, setQuotaInfo] = useState(null);
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -49,6 +53,7 @@ export default function AdvisorPage() {
     try {
       const res = await api.sendAdvisorMessage(query, conversationId);
       if (res.conversationId) setConversationId(res.conversationId);
+      if (res.quota) setQuotaInfo(res.quota);
 
       setMessages((prev) => [
         ...prev,
@@ -59,14 +64,26 @@ export default function AdvisorPage() {
         }
       ]);
     } catch (err) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'model',
-          content: 'Unable to reach the advisor service right now. Please check your connection and try again.',
-          isError: true
-        }
-      ]);
+      if (err.message && (err.message.includes('quota') || err.message.includes('429') || err.message.includes('limit'))) {
+        setQuotaExceeded(true);
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'model',
+            content: '⚠️ You have used all 5 free daily questions. To get unlimited 24/7 AI Pet Advisor guidance, customized diet charts, and post-adoption support, please upgrade to PawMatch Premium.',
+            isQuota: true
+          }
+        ]);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'model',
+            content: 'Unable to reach the advisor service right now. Please check your connection and try again.',
+            isError: true
+          }
+        ]);
+      }
     } finally {
       setLoading(false);
     }
@@ -98,6 +115,23 @@ export default function AdvisorPage() {
           <p className="text-sm text-sand-800 mt-1">
             Empathetic guidance for urban Indian pet parents. Free tier AI with resilient offline knowledge base.
           </p>
+          <div className="mt-3 flex items-center gap-2">
+            {isPremium ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Unlimited Queries (Premium Active)</span>
+              </span>
+            ) : (
+              <div className="inline-flex items-center gap-2 text-xs">
+                <span className="px-2.5 py-1 rounded-full bg-sand-200 text-sand-800 font-semibold">
+                  {quotaInfo ? `${quotaInfo.remaining} of ${quotaInfo.limit} free queries left today` : '5 free questions / day'}
+                </span>
+                <Link to="/pricing" className="font-bold text-brand-600 hover:text-brand-700 underline">
+                  Upgrade to Unlimited
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
 
         <button
@@ -198,27 +232,44 @@ export default function AdvisorPage() {
         </div>
 
         {/* Input Bar */}
-        <div className="p-4 bg-white border-t border-sand-200 flex items-center gap-3">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSend();
-            }}
-            placeholder="Type your question about dog/cat breeds, nutrition, flat living, or costs..."
-            className="flex-1 bg-sand-50 border border-sand-300 rounded-2xl px-4 py-3 text-xs sm:text-sm text-sand-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
-            disabled={loading}
-          />
-          <button
-            onClick={() => handleSend()}
-            disabled={!input.trim() || loading}
-            className="px-5 py-3 rounded-2xl bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-soft transition-colors flex-shrink-0"
-          >
-            <span>Send</span>
-            <Send className="w-4 h-4" />
-          </button>
-        </div>
+        {quotaExceeded ? (
+          <div className="p-4 bg-amber-50 border-t border-amber-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+            <div className="flex items-center gap-2 text-xs text-amber-950">
+              <Lock className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              <span>
+                <strong>Daily Free Limit Reached (5/5).</strong> Upgrade to PawMatch Premium for unlimited messages, custom nutrition plans, and vaccination tracking.
+              </span>
+            </div>
+            <Link
+              to="/pricing"
+              className="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs shadow-soft transition-colors flex-shrink-0"
+            >
+              Upgrade for ₹299/mo
+            </Link>
+          </div>
+        ) : (
+          <div className="p-4 bg-white border-t border-sand-200 flex items-center gap-3">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSend();
+              }}
+              placeholder="Type your question about dog/cat breeds, nutrition, flat living, or costs..."
+              className="flex-1 bg-sand-50 border border-sand-300 rounded-2xl px-4 py-3 text-xs sm:text-sm text-sand-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+              disabled={loading}
+            />
+            <button
+              onClick={() => handleSend()}
+              disabled={!input.trim() || loading}
+              className="px-5 py-3 rounded-2xl bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-soft transition-colors flex-shrink-0"
+            >
+              <span>Send</span>
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
       </div>
 

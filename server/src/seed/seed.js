@@ -13,7 +13,9 @@ import {
   PET_RICH_CONTENT,
   FAQ_ITEMS,
   ONBOARDING_DOG_PLAN,
-  ONBOARDING_CAT_PLAN
+  ONBOARDING_CAT_PLAN,
+  PARTNERS,
+  SERVICE_PROVIDERS
 } from './seedData.js';
 import {
   PetContent,
@@ -239,8 +241,61 @@ export async function seedAll() {
       `, [v.id, v.name, v.clinic_name, v.city, v.area, v.phone, v.emergency_24x7, v.address, v.rating]);
     }
   }
+  // 8. Partners
+  for (const p of PARTNERS) {
+    if (db.isMock) {
+      const idx = inMemoryDB.tables.partners.findIndex(item => item.id === p.id);
+      if (idx >= 0) inMemoryDB.tables.partners[idx] = p;
+      else inMemoryDB.tables.partners.push(p);
+    } else {
+      await db.query(`
+        INSERT INTO partners (id, name, category, description, url, commission_note, city, active, badge_label, target_tags)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        ON CONFLICT (id) DO UPDATE SET
+          name = EXCLUDED.name,
+          category = EXCLUDED.category,
+          description = EXCLUDED.description,
+          url = EXCLUDED.url,
+          commission_note = EXCLUDED.commission_note,
+          city = EXCLUDED.city,
+          active = EXCLUDED.active,
+          badge_label = EXCLUDED.badge_label,
+          target_tags = EXCLUDED.target_tags,
+          updated_at = CURRENT_TIMESTAMP
+      `, [p.id, p.name, p.category, p.description, p.url, p.commission_note, p.city, p.active, p.badge_label, p.target_tags]);
+    }
+  }
 
-  console.log(`SQL Seed complete: ${PETS.length} pets, ${CITIES.length} cities, ${SHELTERS.length} shelters, ${ANIMALS.length} animals, ${VETS.length} vets.`);
+  // 9. Service Providers
+  for (const sp of SERVICE_PROVIDERS) {
+    if (db.isMock) {
+      const idx = inMemoryDB.tables.service_providers.findIndex(item => item.id === sp.id);
+      if (idx >= 0) inMemoryDB.tables.service_providers[idx] = sp;
+      else inMemoryDB.tables.service_providers.push(sp);
+    } else {
+      await db.query(`
+        INSERT INTO service_providers (id, name, category, city, area, phone, email, rating, reviews_count, price_range, experience_years, description, address, active, verified)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+        ON CONFLICT (id) DO UPDATE SET
+          name = EXCLUDED.name,
+          category = EXCLUDED.category,
+          city = EXCLUDED.city,
+          area = EXCLUDED.area,
+          phone = EXCLUDED.phone,
+          email = EXCLUDED.email,
+          rating = EXCLUDED.rating,
+          reviews_count = EXCLUDED.reviews_count,
+          price_range = EXCLUDED.price_range,
+          experience_years = EXCLUDED.experience_years,
+          description = EXCLUDED.description,
+          address = EXCLUDED.address,
+          active = EXCLUDED.active,
+          verified = EXCLUDED.verified
+      `, [sp.id, sp.name, sp.category, sp.city, sp.area, sp.phone, sp.email, sp.rating, sp.reviews_count, sp.price_range, sp.experience_years, sp.description, sp.address, sp.active, sp.verified]);
+    }
+  }
+
+  console.log(`SQL Seed complete: ${PETS.length} pets, ${CITIES.length} cities, ${SHELTERS.length} shelters, ${ANIMALS.length} animals, ${VETS.length} vets, ${PARTNERS.length} partners, ${SERVICE_PROVIDERS.length} providers.`);
 
   // Step 3: Seed MongoDB / Mongoose collections
   console.log('Seeding MongoDB collections...');
