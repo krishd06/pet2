@@ -137,17 +137,56 @@ export default function ResultsPage() {
 
   useEffect(() => {
     async function loadAssessment() {
+      let localCached = null;
+      try {
+        const fromSession = sessionStorage.getItem('pawmatch_assessment_' + id);
+        if (fromSession) {
+          localCached = JSON.parse(fromSession);
+        } else {
+          const fromLocal = localStorage.getItem('pawmatch_last_assessment');
+          if (fromLocal) {
+            const parsed = JSON.parse(fromLocal);
+            if (parsed.assessmentId === id) {
+              localCached = parsed;
+            }
+          }
+        }
+      } catch (storageErr) {
+        console.warn('Local assessment read note:', storageErr);
+      }
+
+      // If available locally, populate instantly for zero-latency UI
+      if (localCached && (localCached.rankedMatches || localCached.readiness)) {
+        setAssessment(localCached);
+        if (localCached.answers?.city) {
+          setSelectedCity(localCached.answers.city);
+        }
+        if (localCached.rankedMatches?.length > 0) {
+          setSelectedCostPet(localCached.rankedMatches[0]);
+        }
+        setLoading(false);
+      }
+
+      // Fetch fresh assessment from server / Supabase
       try {
         const data = await api.getAssessmentById(id);
-        setAssessment(data);
-        if (data.answers?.city) {
-          setSelectedCity(data.answers.city);
-        }
-        if (data.rankedMatches?.length > 0) {
-          setSelectedCostPet(data.rankedMatches[0]);
+        if (data) {
+          setAssessment(data);
+          if (data.answers?.city) {
+            setSelectedCity(data.answers.city);
+          }
+          if (data.rankedMatches?.length > 0) {
+            setSelectedCostPet(data.rankedMatches[0]);
+          }
+          try {
+            sessionStorage.setItem('pawmatch_assessment_' + id, JSON.stringify(data));
+          } catch (_) {}
+          setError('');
         }
       } catch (err) {
-        setError('Failed to load assessment results: ' + err.message);
+        if (!localCached) {
+          setError('Failed to load assessment results: ' + err.message);
+        }
       } finally {
         setLoading(false);
       }

@@ -3,6 +3,9 @@ import { evaluateAssessment } from '../engine/index.js';
 import { ExplanationTemplates, RemediationTemplates } from '../models/index.js';
 import { getAllBreedsData } from '../services/breedService.js';
 import { generateAiPetReasonings } from '../services/aiReasoningService.js';
+import { supabaseAdmin } from '../db/supabase.js';
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function createAssessment(req, res) {
   try {
@@ -100,28 +103,75 @@ export async function createAssessment(req, res) {
       console.warn('AI reasoning augmentation note:', aiErr.message);
     }
 
-    // 6. Persist assessment in database
+    // 6. Generate unique assessment ID
     const assessmentId = 'asm_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
     const userId = req.user ? req.user.id : null;
     const guestToken = req.guest ? req.guest.guestId : (req.body.guestToken || null);
+    const validUuidUserId = (userId && UUID_REGEX.test(userId)) ? userId : null;
 
-    await db.query(
-      `INSERT INTO assessments (
-        id, user_id, guest_token, readiness_score, readiness_band,
-        answers_json, readiness_breakdown_json, top_pet_matches_json, excluded_pets_json
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-      [
-        assessmentId,
-        userId,
-        guestToken,
-        evaluation.readiness.overallScore,
-        evaluation.readiness.band,
-        JSON.stringify(answers),
-        JSON.stringify(evaluation.readiness.categoryBreakdown),
-        JSON.stringify(ranked.slice(0, 10)),
-        JSON.stringify(evaluation.whyNotShown)
-      ]
-    );
+    // 7. Persist to live Supabase persistent store (survives Vercel serverless cold restarts)
+    if (supabaseAdmin) {
+      try {
+        const { data: sessionData, error: sessionErr } = await supabaseAdmin
+          .from('quiz_sessions')
+          .insert({
+            anon_session_id: assessmentId,
+            user_id: validUuidUserId,
+            consent_analytics: true
+          })
+          .select('id')
+          .single();
+
+        if (sessionData?.id) {
+          const fullPayload = {
+            assessmentId,
+            userId,
+            guestToken,
+            readiness: evaluation.readiness,
+            rankedMatches: ranked,
+            whyNotShown: evaluation.whyNotShown,
+            answers,
+            topMatch: evaluation.topMatch,
+            createdAt: new Date().toISOString()
+          };
+
+          await supabaseAdmin
+            .from('quiz_results')
+            .insert({
+              session_id: sessionData.id,
+              readiness_score: evaluation.readiness?.overallScore || 70,
+              top_breeds: ranked.slice(0, 10),
+              forecast: fullPayload
+            });
+        }
+      } catch (sbErr) {
+        console.warn('Supabase quiz persistence note:', sbErr.message);
+      }
+    }
+
+    // 8. Also record in relational/in-memory store for backwards compatibility
+    try {
+      await db.query(
+        `INSERT INTO assessments (
+          id, user_id, guest_token, readiness_score, readiness_band,
+          answers_json, readiness_breakdown_json, top_pet_matches_json, excluded_pets_json
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [
+          assessmentId,
+          userId,
+          guestToken,
+          evaluation.readiness.overallScore,
+          evaluation.readiness.band,
+          JSON.stringify(answers),
+          JSON.stringify(evaluation.readiness.categoryBreakdown),
+          JSON.stringify(ranked.slice(0, 10)),
+          JSON.stringify(evaluation.whyNotShown)
+        ]
+      );
+    } catch (dbErr) {
+      // Non-fatal if table doesn't exist in Supabase or serverless
+      console.warn('Local db assessment query note:', dbErr.message);
+    }
 
     return res.status(201).json({
       assessmentId,
@@ -136,6 +186,64 @@ export async function createAssessment(req, res) {
 export async function getAssessmentById(req, res) {
   try {
     const { id } = req.params;
+
+    // 1. First check Supabase live persistent storage
+    if (supabaseAdmin) {
+      try {
+        let query = supabaseAdmin
+          .from('quiz_sessions')
+          .select('id, user_id, anon_session_id, started_at, quiz_results (*)')
+          .eq('anon_session_id', id);
+
+        let { data: sessionData, error: qErr } = await query.maybeSingle();
+
+        // Also check if id passed was direct session UUID
+        if (!sessionData && UUID_REGEX.test(id)) {
+          const resUuid = await supabaseAdmin
+            .from('quiz_sessions')
+            .select('id, user_id, anon_session_id, started_at, quiz_results (*)')
+            .eq('id', id)
+            .maybeSingle();
+          sessionData = resUuid.data;
+        }
+
+        if (sessionData && sessionData.quiz_results && sessionData.quiz_results.length > 0) {
+          const resultRow = sessionData.quiz_results[0];
+          const forecast = resultRow.forecast || {};
+
+          let topPetMatches = forecast.rankedMatches || resultRow.top_breeds || [];
+          const answers = forecast.answers || {};
+
+          // If top pets don't have aiReasoning yet, augment the top 3
+          if (topPetMatches.length > 0 && !topPetMatches[0].aiReasoning) {
+            try {
+              const top3Augmented = await generateAiPetReasonings(topPetMatches.slice(0, 3), answers);
+              topPetMatches = [...top3Augmented, ...topPetMatches.slice(3)];
+            } catch (e) {
+              console.warn('AI reasoning on getAssessment note:', e.message);
+            }
+          }
+
+          return res.json({
+            assessmentId: sessionData.anon_session_id || sessionData.id,
+            userId: sessionData.user_id,
+            createdAt: resultRow.created_at || sessionData.started_at,
+            readiness: forecast.readiness || {
+              overallScore: resultRow.readiness_score || 75,
+              band: (resultRow.readiness_score || 75) >= 80 ? 'Optimal Readiness' : 'Moderate Readiness',
+              categoryBreakdown: {}
+            },
+            rankedMatches: topPetMatches,
+            whyNotShown: forecast.whyNotShown || [],
+            answers
+          });
+        }
+      } catch (sbErr) {
+        console.warn('Supabase fetch assessment note:', sbErr.message);
+      }
+    }
+
+    // 2. Fallback to SQL / InMemory database
     const db = getDb();
     const result = await db.query('SELECT * FROM assessments WHERE id = $1', [id]);
 
@@ -180,6 +288,45 @@ export async function getAssessmentById(req, res) {
 
 export async function getMyAssessments(req, res) {
   try {
+    const formatted = [];
+
+    // 1. Check Supabase
+    if (supabaseAdmin) {
+      try {
+        const userId = req.user ? req.user.id : null;
+        const guestToken = req.guest ? req.guest.guestId : req.query.guestToken;
+
+        let query = supabaseAdmin
+          .from('quiz_sessions')
+          .select('id, anon_session_id, user_id, started_at, quiz_results (readiness_score, created_at)');
+
+        if (userId && UUID_REGEX.test(userId)) {
+          query = query.eq('user_id', userId);
+        } else if (guestToken) {
+          query = query.eq('anon_session_id', guestToken);
+        }
+
+        const { data } = await query.order('started_at', { ascending: false }).limit(20);
+        if (data && data.length > 0) {
+          data.forEach(s => {
+            const r = s.quiz_results?.[0];
+            formatted.push({
+              id: s.anon_session_id || s.id,
+              readinessScore: r?.readiness_score || 75,
+              readinessBand: (r?.readiness_score || 75) >= 80 ? 'Optimal' : 'Moderate',
+              createdAt: r?.created_at || s.started_at
+            });
+          });
+          if (formatted.length > 0) {
+            return res.json({ assessments: formatted });
+          }
+        }
+      } catch (e) {
+        console.warn('Supabase getMyAssessments note:', e.message);
+      }
+    }
+
+    // 2. Fallback to SQL / InMemory database
     const db = getDb();
     let rows = [];
 
@@ -192,16 +339,17 @@ export async function getMyAssessments(req, res) {
       rows = result.rows || [];
     }
 
-    const formatted = rows.map(r => ({
+    const localFormatted = rows.map(r => ({
       id: r.id,
       readinessScore: r.readiness_score,
       readinessBand: r.readiness_band,
       createdAt: r.created_at
     }));
 
-    return res.json({ assessments: formatted });
+    return res.json({ assessments: localFormatted });
   } catch (err) {
     console.error('Get my assessments error:', err);
     return res.status(500).json({ error: 'Failed to fetch assessments' });
   }
 }
+

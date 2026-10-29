@@ -181,6 +181,14 @@ export default function QuestionnairePage() {
           }
         }
 
+        // Cache assessment in local storage for instant zero-latency loading
+        try {
+          sessionStorage.setItem('pawmatch_assessment_' + res.assessmentId, JSON.stringify(res));
+          localStorage.setItem('pawmatch_last_assessment', JSON.stringify(res));
+        } catch (storageErr) {
+          console.warn('Local assessment caching note:', storageErr);
+        }
+
         // Clear saved answers on successful submission and navigate to results
         localStorage.removeItem(STORAGE_KEY);
         navigate(`/results/${res.assessmentId}`);
