@@ -29,17 +29,14 @@ export default function HeroVideoScrubber() {
   const overlay1Ref = useRef(null);
   const overlay2Ref = useRef(null);
   const overlay3Ref = useRef(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     const video = videoRef.current;
     const container = containerRef.current;
     if (!video || !container) return;
 
-    let targetTime = 0;
-    let smoothedTime = 0;
-    let isSeeking = false;
-    let pendingSeek = null;
-    let animFrameId = null;
+    let seekTimeout = null;
 
     const handleLoadedMetadata = () => {
       if (video.duration && !isNaN(video.duration)) {
@@ -54,68 +51,60 @@ export default function HeroVideoScrubber() {
       video.addEventListener('loadedmetadata', handleLoadedMetadata);
     }
 
-    // Hardware decoder safe seeking gate: uses fastSeek if available for zero lag
-    const doSeek = (t) => {
-      if (!video.duration || isNaN(video.duration)) return;
-      const clamped = Math.max(0, Math.min(t, video.duration - 0.05));
-
-      if (video.seeking || isSeeking) {
-        pendingSeek = clamped;
-        return;
-      }
-
-      // Delta threshold prevents unnecessary decoder thrashing while keeping motion crisp
-      if (Math.abs(video.currentTime - clamped) > 0.025) {
-        isSeeking = true;
-        if (typeof video.fastSeek === 'function') {
-          video.fastSeek(clamped);
-        } else {
-          video.currentTime = clamped;
-        }
+    // Start native hardware-accelerated playback immediately
+    const startPlay = async () => {
+      try {
+        video.muted = true;
+        await video.play();
+      } catch (err) {
+        // Autoplay may wait for user interaction; non-fatal
+        console.warn('Video auto-playback note:', err.message);
       }
     };
-
-    const handleSeeked = () => {
-      isSeeking = false;
-      if (pendingSeek !== null) {
-        const nextTime = pendingSeek;
-        pendingSeek = null;
-        doSeek(nextTime);
-      }
-    };
-
-    video.addEventListener('seeked', handleSeeked);
-
-    // Smooth RAF loop with responsive easing for immediate, lag-free scrubbing
-    const renderLoop = () => {
-      if (video.duration) {
-        smoothedTime += (targetTime - smoothedTime) * 0.22;
-        doSeek(smoothedTime);
-      }
-      animFrameId = requestAnimationFrame(renderLoop);
-    };
-    animFrameId = requestAnimationFrame(renderLoop);
+    startPlay();
 
     // ScrollTrigger setup on the 400vh container
     const st = ScrollTrigger.create({
       trigger: container,
       start: 'top top',
       end: 'bottom bottom',
-      scrub: 0.3,
+      scrub: 0.1,
       onUpdate: (self) => {
         const p = self.progress;
+        setScrollProgress(p);
 
-        if (video.duration) {
-          targetTime = p * video.duration;
+        // Hardware-accelerated GPU camera zoom (runs at silky 60fps on compositor thread)
+        video.style.transform = `scale(${1.0 + p * 0.12}) translate3d(0, 0, 0)`;
+
+        // Velocity-based playback rate: accelerate subtly when user scrolls actively, without seeking
+        const velocity = Math.abs(self.getVelocity() || 0);
+        if (velocity > 100) {
+          const dynamicRate = Math.min(2.2, 1.0 + velocity * 0.0006);
+          video.playbackRate = dynamicRate;
+        } else {
+          video.playbackRate = 1.0;
         }
+
+        // Only soft-align video timeline when user scrolls a significant distance, debounced
+        clearTimeout(seekTimeout);
+        seekTimeout = setTimeout(() => {
+          if (video.duration && !isNaN(video.duration)) {
+            const targetSec = p * video.duration;
+            // Only seek if drift between current playback and target section is noticeable (> 2s)
+            if (Math.abs(video.currentTime - targetSec) > 2.5) {
+              video.currentTime = Math.max(0, Math.min(targetSec, video.duration - 0.1));
+            }
+            video.playbackRate = 1.0;
+          }
+        }, 350);
 
         // Overlay 1: 0% - 28%
         if (overlay1Ref.current) {
           if (p <= 0.28) {
             const op = p < 0.2 ? 1 : 1 - (p - 0.2) / 0.08;
-            const y = (p / 0.28) * -30;
+            const y = (p / 0.28) * -25;
             overlay1Ref.current.style.opacity = op;
-            overlay1Ref.current.style.transform = `translateY(${y}px)`;
+            overlay1Ref.current.style.transform = `translate3d(0, ${y}px, 0)`;
             overlay1Ref.current.style.pointerEvents = op > 0.4 ? 'auto' : 'none';
           } else {
             overlay1Ref.current.style.opacity = 0;
@@ -129,9 +118,9 @@ export default function HeroVideoScrubber() {
             let op = 1;
             if (p < 0.40) op = (p - 0.30) / 0.10;
             else if (p > 0.58) op = 1 - (p - 0.58) / 0.10;
-            const y = (p - 0.30) * -30;
+            const y = (p - 0.30) * -25;
             overlay2Ref.current.style.opacity = Math.max(0, Math.min(1, op));
-            overlay2Ref.current.style.transform = `translateY(${y}px)`;
+            overlay2Ref.current.style.transform = `translate3d(0, ${y}px, 0)`;
             overlay2Ref.current.style.pointerEvents = op > 0.4 ? 'auto' : 'none';
           } else {
             overlay2Ref.current.style.opacity = 0;
@@ -145,7 +134,7 @@ export default function HeroVideoScrubber() {
             const op = Math.min(1, (p - 0.68) / 0.12);
             const y = (p - 0.68) * -20;
             overlay3Ref.current.style.opacity = op;
-            overlay3Ref.current.style.transform = `translateY(${y}px)`;
+            overlay3Ref.current.style.transform = `translate3d(0, ${y}px, 0)`;
             overlay3Ref.current.style.pointerEvents = op > 0.4 ? 'auto' : 'none';
           } else {
             overlay3Ref.current.style.opacity = 0;
@@ -157,9 +146,8 @@ export default function HeroVideoScrubber() {
 
     return () => {
       st.kill();
-      cancelAnimationFrame(animFrameId);
+      clearTimeout(seekTimeout);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      video.removeEventListener('seeked', handleSeeked);
     };
   }, []);
 
@@ -178,10 +166,12 @@ export default function HeroVideoScrubber() {
       {/* ─── STICKY FULLSCREEN VIEWPORT (Pinned for 400vh) ─── */}
       <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-center">
         
-        {/* Background Scrubbed Video with enhanced sharpness and GPU composition */}
+        {/* Background Video with native hardware-accelerated 60 FPS playback */}
         <video
           ref={videoRef}
           src="/videos/gemini_generated_video_bfbd57b3.mp4"
+          autoPlay
+          loop
           muted={isMuted}
           playsInline
           preload="auto"
@@ -329,7 +319,53 @@ export default function HeroVideoScrubber() {
               </Link>
             </div>
           </div>
+        </div>
 
+        {/* ─── BOTTOM CINEMATIC SCENE TRACKER ─── */}
+        <div className="absolute bottom-6 left-0 right-0 z-20 px-6 sm:px-12 flex items-center justify-between pointer-events-none">
+          <div className="flex items-center gap-2 pointer-events-auto bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 shadow-lg">
+            <button
+              onClick={() => {
+                const c = containerRef.current;
+                if (c) window.scrollTo({ top: c.offsetTop, behavior: 'smooth' });
+              }}
+              className={`text-[11px] font-mono transition-colors ${scrollProgress < 0.3 ? 'text-amber-400 font-bold' : 'text-stone-400 hover:text-white'}`}
+            >
+              01 KINSHIP
+            </button>
+            <span className="text-stone-600 text-xs">•</span>
+            <button
+              onClick={() => {
+                const c = containerRef.current;
+                if (c) window.scrollTo({ top: c.offsetTop + c.offsetHeight * 0.45, behavior: 'smooth' });
+              }}
+              className={`text-[11px] font-mono transition-colors ${scrollProgress >= 0.3 && scrollProgress < 0.7 ? 'text-orange-400 font-bold' : 'text-stone-400 hover:text-white'}`}
+            >
+              02 CLIMATE
+            </button>
+            <span className="text-stone-600 text-xs">•</span>
+            <button
+              onClick={() => {
+                const c = containerRef.current;
+                if (c) window.scrollTo({ top: c.offsetTop + c.offsetHeight * 0.85, behavior: 'smooth' });
+              }}
+              className={`text-[11px] font-mono transition-colors ${scrollProgress >= 0.7 ? 'text-emerald-400 font-bold' : 'text-stone-400 hover:text-white'}`}
+            >
+              03 MATCH
+            </button>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-3">
+            <div className="w-32 h-1.5 rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-amber-400 via-orange-400 to-emerald-400 transition-all duration-150"
+                style={{ width: `${Math.round(scrollProgress * 100)}%` }}
+              />
+            </div>
+            <span className="text-[11px] font-mono text-stone-400">
+              {Math.round(scrollProgress * 100)}%
+            </span>
+          </div>
         </div>
 
       </div>
