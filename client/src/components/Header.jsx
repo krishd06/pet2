@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 export default function Header() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isPremium, logout } = useAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -145,9 +145,17 @@ export default function Header() {
                       <div className="px-3 py-2.5 border-b border-white/10 mb-1">
                         <p className="text-xs font-bold text-white truncate">{user.name}</p>
                         <p className="text-[11px] text-stone-400 truncate">{user.email}</p>
-                        <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                          {user.role || 'Adopter'}
-                        </span>
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                            {user.role || 'Adopter'}
+                          </span>
+                          {isPremium && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                              <Sparkles className="w-2.5 h-2.5" />
+                              Premium
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <div className="space-y-0.5">

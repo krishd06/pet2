@@ -44,6 +44,77 @@ import {
   Cell
 } from 'recharts';
 
+const CITY_MULTIPLIERS = {
+  Mumbai: { cost: 1.25, vet: 1.25, food: 1.15 },
+  Delhi: { cost: 1.15, vet: 1.15, food: 1.10 },
+  Bengaluru: { cost: 1.20, vet: 1.20, food: 1.15 },
+  Pune: { cost: 1.05, vet: 1.05, food: 1.00 },
+  Chennai: { cost: 1.10, vet: 1.10, food: 1.05 },
+  Hyderabad: { cost: 1.10, vet: 1.10, food: 1.05 },
+  Kolkata: { cost: 0.95, vet: 0.95, food: 0.95 },
+  Ahmedabad: { cost: 1.00, vet: 1.00, food: 1.00 }
+};
+
+function calculateClientCostForecast(petItem, cityName = 'Mumbai') {
+  const m = CITY_MULTIPLIERS[cityName] || { cost: 1.0, vet: 1.0, food: 1.0 };
+  const pet = petItem?.pet || petItem || {};
+  const isNative = Boolean(pet.is_native || pet.is_indian_native);
+  const species = (pet.species || 'dog').toLowerCase();
+  const groomingDemand = Number(pet.grooming_demand) || 2;
+
+  const adoptionFee = isNative ? 1000 : 3000;
+  const initialVaccinations = Math.round((species === 'cat' ? 3000 : (species === 'dog' ? 3500 : 1000)) * m.vet);
+  const spayNeuter = Math.round((isNative ? 2000 : (species === 'cat' ? 3500 : 5000)) * m.vet);
+  let baseStarter = species === 'cat' ? 3000 : (pet.size === 'large' ? 5000 : 3500);
+  const starterKit = Math.round(baseStarter * m.cost);
+  const totalUpfront = adoptionFee + initialVaccinations + spayNeuter + starterKit;
+
+  let baseFood = Number(pet.base_monthly_cost_inr) ? Math.round(pet.base_monthly_cost_inr * 0.55) : 2200;
+  if (baseFood < 600) baseFood = 600;
+  const food = Math.round(baseFood * m.food);
+
+  let baseGrooming = 350;
+  if (groomingDemand >= 4) baseGrooming = 1800;
+  else if (groomingDemand === 3) baseGrooming = 750;
+  const grooming = Math.round(baseGrooming * m.cost);
+
+  const parasitePrevention = Math.round((species === 'dog' ? 850 : (species === 'cat' ? 650 : 200)) * m.vet);
+  const routineVet = Math.round((species === 'dog' ? 500 : (species === 'cat' ? 400 : 200)) * m.vet);
+  const emergencyFundContribution = 1000;
+  const totalMonthly = food + grooming + parasitePrevention + routineVet + emergencyFundContribution;
+
+  return {
+    petId: pet.id || petItem?.petId || 'default-pet',
+    petName: pet.name || petItem?.petName || 'Companion Pet',
+    cityName,
+    currency: 'INR',
+    multipliers: {
+      costMultiplier: m.cost,
+      vetMultiplier: m.vet,
+      foodMultiplier: m.food
+    },
+    upfront: {
+      adoptionFee,
+      initialVaccinations,
+      spayNeuter,
+      starterKit,
+      totalUpfront
+    },
+    monthly: {
+      food,
+      grooming,
+      parasitePrevention,
+      routineVet,
+      emergencyFundContribution,
+      totalMonthly
+    },
+    projections: {
+      oneYearTotal: totalUpfront + (totalMonthly * 12),
+      fiveYearTotal: totalUpfront + (totalMonthly * 60)
+    }
+  };
+}
+
 export default function ResultsPage() {
   const { id } = useParams();
   const { user, isPremium } = useAuth();
@@ -159,11 +230,12 @@ export default function ResultsPage() {
       // If available locally, populate instantly for zero-latency UI
       if (localCached && (localCached.rankedMatches || localCached.readiness)) {
         setAssessment(localCached);
-        if (localCached.answers?.city) {
-          setSelectedCity(localCached.answers.city);
-        }
+        const city = localCached.answers?.city || 'Mumbai';
+        setSelectedCity(city);
         if (localCached.rankedMatches?.length > 0) {
-          setSelectedCostPet(localCached.rankedMatches[0]);
+          const firstPet = localCached.rankedMatches[0];
+          setSelectedCostPet(firstPet);
+          setCostForecast(calculateClientCostForecast(firstPet, city));
         }
         setLoading(false);
       }
@@ -173,11 +245,12 @@ export default function ResultsPage() {
         const data = await api.getAssessmentById(id);
         if (data) {
           setAssessment(data);
-          if (data.answers?.city) {
-            setSelectedCity(data.answers.city);
-          }
+          const city = data.answers?.city || 'Mumbai';
+          setSelectedCity(city);
           if (data.rankedMatches?.length > 0) {
-            setSelectedCostPet(data.rankedMatches[0]);
+            const firstPet = data.rankedMatches[0];
+            setSelectedCostPet(firstPet);
+            setCostForecast(prev => prev || calculateClientCostForecast(firstPet, city));
           }
           try {
             sessionStorage.setItem('pawmatch_assessment_' + id, JSON.stringify(data));
@@ -199,15 +272,25 @@ export default function ResultsPage() {
   useEffect(() => {
     if (!selectedCostPet) return;
     const petId = selectedCostPet.petId || selectedCostPet.pet?.id;
-    if (!petId) return;
+    const slug = selectedCostPet.petSlug || selectedCostPet.pet?.slug;
+    const identifier = petId || slug;
+    if (!identifier) return;
+
+    // Set immediate client calculated forecast while fetching API version
+    setCostForecast(prev => prev || calculateClientCostForecast(selectedCostPet, selectedCity));
 
     async function loadCost() {
       setCostLoading(true);
       try {
-        const forecast = await api.getCostForecast(petId, selectedCity);
-        setCostForecast(forecast);
+        const forecast = await api.getCostForecast(identifier, selectedCity);
+        if (forecast && forecast.monthly && forecast.upfront) {
+          setCostForecast(forecast);
+        } else {
+          setCostForecast(calculateClientCostForecast(selectedCostPet, selectedCity));
+        }
       } catch (err) {
-        console.warn('Cost forecast load error:', err.message);
+        console.warn('Cost forecast load notice, using client engine:', err.message);
+        setCostForecast(calculateClientCostForecast(selectedCostPet, selectedCity));
       } finally {
         setCostLoading(false);
       }
@@ -1187,7 +1270,10 @@ export default function ResultsPage() {
 
           </div>
         ) : (
-          <div className="py-8 text-center text-xs text-sand-800">Loading cost forecast...</div>
+          <div className="py-12 text-center text-xs text-sand-800 space-y-2">
+            <div className="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="font-semibold text-sand-900">Calculating cost-of-ownership for {selectedCostPet?.pet?.name || selectedCostPet?.petName || 'companion'} in {selectedCity}...</p>
+          </div>
         )}
 
         {/* Feature B: Recommended Partners on Cost Forecaster */}

@@ -61,6 +61,43 @@ export async function seedAll() {
     }
   }
 
+  // 1.5 Active Premium Subscription for Demo Adopter
+  const demoSubscription = {
+    id: 'sub_demo_adopter_premium',
+    user_id: 'usr_adopter_demo',
+    plan_tier: 'premium',
+    billing_cycle: 'yearly',
+    status: 'active',
+    start_date: new Date().toISOString(),
+    end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+  };
+  if (db.isMock) {
+    const idx = inMemoryDB.tables.subscriptions.findIndex(s => s.user_id === demoSubscription.user_id);
+    if (idx >= 0) inMemoryDB.tables.subscriptions[idx] = demoSubscription;
+    else inMemoryDB.tables.subscriptions.push(demoSubscription);
+  } else {
+    try {
+      await db.query(`
+        INSERT INTO subscriptions (id, user_id, plan_tier, billing_cycle, status, start_date, end_date)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        ON CONFLICT (id) DO UPDATE SET
+          plan_tier = EXCLUDED.plan_tier,
+          status = EXCLUDED.status,
+          end_date = EXCLUDED.end_date
+      `, [
+        demoSubscription.id,
+        demoSubscription.user_id,
+        demoSubscription.plan_tier,
+        demoSubscription.billing_cycle,
+        demoSubscription.status,
+        demoSubscription.start_date,
+        demoSubscription.end_date
+      ]);
+    } catch (subErr) {
+      console.warn('Subscription seed note:', subErr.message);
+    }
+  }
+
   // 2. Cities
   for (const city of CITIES) {
     if (db.isMock) {

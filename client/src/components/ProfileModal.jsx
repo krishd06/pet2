@@ -27,7 +27,7 @@ const INDIAN_CITIES = [
 ];
 
 export default function ProfileModal({ isOpen, onClose }) {
-  const { user, updateUserProfile, logout } = useAuth();
+  const { user, isPremium, updateUserProfile, logout } = useAuth();
   const navigate = useNavigate();
 
   const [name, setName] = useState(user?.name || '');
@@ -99,11 +99,17 @@ export default function ProfileModal({ isOpen, onClose }) {
               {initials}
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-xl font-black tracking-tight text-white">{user.name}</h2>
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
                   {user.role || 'Adopter'}
                 </span>
+                {isPremium && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    <Sparkles className="w-3 h-3 text-emerald-300" />
+                    Premium Member
+                  </span>
+                )}
               </div>
               <p className="text-xs text-stone-300 mt-0.5">{user.email}</p>
               <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 mt-1 font-medium">

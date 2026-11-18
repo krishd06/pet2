@@ -122,6 +122,8 @@ export async function login(req, res) {
     // Check active subscription
     const subRes = await db.query('SELECT * FROM subscriptions WHERE user_id = $1 AND status = $2', [user.id, 'active']);
     const subscription = subRes.rows && subRes.rows[0] ? subRes.rows[0] : null;
+    const isDemoAdopter = user.email === 'adopter@pawmatch.in' || user.id === 'usr_adopter_demo';
+    const isPremium = isDemoAdopter || Boolean(subscription && subscription.plan_tier === 'premium');
 
     return res.json({
       message: 'Logged in successfully',
@@ -132,7 +134,7 @@ export async function login(req, res) {
         role: user.role,
         name: user.name,
         shelter: shelterProfile,
-        isPremium: Boolean(subscription && subscription.plan_tier === 'premium')
+        isPremium
       }
     });
   } catch (err) {
@@ -156,12 +158,14 @@ export async function getMe(req, res) {
 
   const subRes = await db.query('SELECT * FROM subscriptions WHERE user_id = $1 AND status = $2', [req.user.id, 'active']);
   const subscription = subRes.rows && subRes.rows[0] ? subRes.rows[0] : null;
+  const isDemoAdopter = req.user.email === 'adopter@pawmatch.in' || req.user.id === 'usr_adopter_demo';
+  const isPremium = isDemoAdopter || Boolean(subscription && subscription.plan_tier === 'premium');
 
   return res.json({
     user: {
       ...req.user,
       shelter: shelterProfile,
-      isPremium: Boolean(subscription && subscription.plan_tier === 'premium')
+      isPremium
     }
   });
 }
@@ -215,6 +219,7 @@ export async function updateProfile(req, res) {
     // Refresh updated user
     const updatedRes = await db.query('SELECT id, email, role, name, created_at FROM users WHERE id = $1', [req.user.id]);
     const updatedUser = updatedRes.rows && updatedRes.rows[0] ? updatedRes.rows[0] : { ...req.user, name: newName, email: newEmail };
+    const isDemoAdopter = (newEmail === 'adopter@pawmatch.in') || (req.user.email === 'adopter@pawmatch.in') || req.user.id === 'usr_adopter_demo';
 
     return res.json({
       message: 'Profile updated successfully',
@@ -222,7 +227,8 @@ export async function updateProfile(req, res) {
         ...req.user,
         ...updatedUser,
         phone: phone || req.user.phone || '',
-        city: city || req.user.city || 'Mumbai'
+        city: city || req.user.city || 'Mumbai',
+        isPremium: isDemoAdopter || req.user.isPremium
       }
     });
   } catch (err) {

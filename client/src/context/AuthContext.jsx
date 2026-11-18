@@ -3,6 +3,15 @@ import { api } from '../lib/api.js';
 
 const AuthContext = createContext(null);
 
+function normalizeUser(u) {
+  if (!u) return null;
+  const isDemo = u.email === 'adopter@pawmatch.in' || u.id === 'usr_adopter_demo';
+  return {
+    ...u,
+    isPremium: isDemo ? true : Boolean(u.isPremium)
+  };
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [guestToken, setGuestToken] = useState(() => localStorage.getItem('pawmatch_guest_token') || null);
@@ -18,7 +27,7 @@ export function AuthProvider({ children }) {
         try {
           const res = await api.getMe();
           if (res && res.user) {
-            setUser(res.user);
+            setUser(normalizeUser(res.user));
           }
         } catch (err) {
           console.warn('Stored session invalid or expired:', err.message);
@@ -54,7 +63,7 @@ export function AuthProvider({ children }) {
     try {
       const res = await api.getMe();
       if (res && res.user) {
-        setUser(res.user);
+        setUser(normalizeUser(res.user));
       }
     } catch (e) {
       console.warn('Failed to refresh user:', e.message);
@@ -65,8 +74,9 @@ export function AuthProvider({ children }) {
     const res = await api.login({ email, password });
     if (res && res.token && res.user) {
       localStorage.setItem('pawmatch_token', res.token);
-      setUser(res.user);
-      return res.user;
+      const normalized = normalizeUser(res.user);
+      setUser(normalized);
+      return normalized;
     }
   }
 
@@ -81,16 +91,18 @@ export function AuthProvider({ children }) {
     const res = await api.register(payload);
     if (res && res.token && res.user) {
       localStorage.setItem('pawmatch_token', res.token);
-      setUser(res.user);
-      return res.user;
+      const normalized = normalizeUser(res.user);
+      setUser(normalized);
+      return normalized;
     }
   }
 
   async function updateUserProfile(payload) {
     const res = await api.updateProfile(payload);
     if (res && res.user) {
-      setUser(res.user);
-      return res.user;
+      const normalized = normalizeUser(res.user);
+      setUser(normalized);
+      return normalized;
     }
   }
 
@@ -99,13 +111,16 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
+  const isDemo = user?.email === 'adopter@pawmatch.in' || user?.id === 'usr_adopter_demo';
+  const isPremium = Boolean(user?.isPremium || isDemo);
+
   const value = {
     user,
     guestToken,
     loading,
     isAuthenticated: Boolean(user),
     isAdopter: true,
-    isPremium: Boolean(user?.isPremium),
+    isPremium,
     login,
     register,
     logout,

@@ -25,12 +25,18 @@ export async function getUserSubscription(req, res) {
     );
 
     const subscription = result.rows && result.rows[0];
-    const isPremium = Boolean(subscription && subscription.plan_tier === 'premium');
+    const isDemoAdopter = req.user.email === 'adopter@pawmatch.in' || req.user.id === 'usr_adopter_demo';
+    const isPremium = isDemoAdopter || Boolean(subscription && subscription.plan_tier === 'premium');
 
     return res.json({
       plan: isPremium ? 'premium' : 'free',
       isPremium,
-      subscription: subscription || null
+      subscription: subscription || (isPremium ? {
+        id: 'sub_demo_adopter_premium',
+        plan_tier: 'premium',
+        billing_cycle: 'yearly',
+        status: 'active'
+      } : null)
     });
   } catch (err) {
     console.error('Error fetching subscription:', err);
@@ -137,23 +143,38 @@ export async function getRoadmap(req, res) {
 export async function saveRoadmap(req, res) {
   try {
     const userId = req.user ? req.user.id : (req.guest ? req.guest.guestId : 'guest');
-    const { petId, petName, readinessScore, timelineWeeks, actionSteps } = req.body;
+    const {
+      petId,
+      petName,
+      readinessScore,
+      timelineWeeks,
+      actionSteps,
+      assessmentId,
+      targetPet,
+      currentScore,
+      steps
+    } = req.body;
 
-    const existing = await Roadmaps.findOne({ userId, petId });
+    const finalPetId = petId || (assessmentId ? `assessment_${assessmentId}` : 'default_pet');
+    const finalPetName = petName || targetPet || 'Selected Pet';
+    const finalScore = readinessScore || currentScore || 70;
+    const finalSteps = actionSteps || steps || [];
+
+    const existing = await Roadmaps.findOne({ userId, petId: finalPetId });
     if (existing) {
-      await Roadmaps.updateOne({ userId, petId }, {
-        $set: { petName, readinessScore, timelineWeeks, actionSteps }
+      await Roadmaps.updateOne({ userId, petId: finalPetId }, {
+        $set: { petName: finalPetName, readinessScore: finalScore, timelineWeeks: timelineWeeks || 4, actionSteps: finalSteps }
       });
       return res.json({ success: true, message: 'Roadmap updated' });
     }
 
     const created = await Roadmaps.create({
       userId,
-      petId,
-      petName,
-      readinessScore: readinessScore || 70,
+      petId: finalPetId,
+      petName: finalPetName,
+      readinessScore: finalScore,
       timelineWeeks: timelineWeeks || 4,
-      actionSteps: actionSteps || []
+      actionSteps: finalSteps
     });
 
     return res.json({ success: true, roadmap: created });
@@ -183,18 +204,7 @@ export async function getCostPlan(req, res) {
 export async function saveCostPlan(req, res) {
   try {
     const userId = req.user ? req.user.id : (req.guest ? req.guest.guestId : 'guest');
-    const { petId, petName, city, upfrontBudget, monthlyBudget, contingencyFund, customNotes, allocations } = req.body;
-
-    const existing = await CostPlans.findOne({ userId, petId });
-    if (existing) {
-      await CostPlans.updateOne({ userId, petId }, {
-        $set: { petName, city, upfrontBudget, monthlyBudget, contingencyFund, customNotes, allocations }
-      });
-      return res.json({ success: true, message: 'Cost plan updated' });
-    }
-
-    const created = await CostPlans.create({
-      userId,
+    const {
       petId,
       petName,
       city,
@@ -202,7 +212,44 @@ export async function saveCostPlan(req, res) {
       monthlyBudget,
       contingencyFund,
       customNotes,
-      allocations
+      allocations,
+      assessmentId,
+      customBudget
+    } = req.body;
+
+    const finalPetId = petId || (assessmentId ? `assessment_${assessmentId}` : 'default_pet');
+    const finalPetName = petName || 'Selected Pet';
+    const finalCity = city || 'Mumbai';
+    const finalMonthly = monthlyBudget || customBudget?.monthlyTotal || 0;
+    const finalUpfront = upfrontBudget || customBudget?.oneYearTotal || 0;
+    const finalAllocations = allocations || customBudget || {};
+
+    const existing = await CostPlans.findOne({ userId, petId: finalPetId });
+    if (existing) {
+      await CostPlans.updateOne({ userId, petId: finalPetId }, {
+        $set: {
+          petName: finalPetName,
+          city: finalCity,
+          upfrontBudget: finalUpfront,
+          monthlyBudget: finalMonthly,
+          contingencyFund: contingencyFund || 1000,
+          customNotes,
+          allocations: finalAllocations
+        }
+      });
+      return res.json({ success: true, message: 'Cost plan updated' });
+    }
+
+    const created = await CostPlans.create({
+      userId,
+      petId: finalPetId,
+      petName: finalPetName,
+      city: finalCity,
+      upfrontBudget: finalUpfront,
+      monthlyBudget: finalMonthly,
+      contingencyFund: contingencyFund || 1000,
+      customNotes,
+      allocations: finalAllocations
     });
 
     return res.json({ success: true, costPlan: created });

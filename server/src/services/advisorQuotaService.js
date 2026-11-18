@@ -5,8 +5,11 @@ import { PRICING_CONFIG } from '../config/pricing.js';
 const dailyUsageMap = new Map();
 
 export async function checkAndIncrementAdvisorUsage(userId, user) {
-  // If user object indicates active premium subscription, unlimited
-  if (user && user.isPremium) {
+  // If user object indicates active premium subscription, or demo adopter account, unlimited
+  if (user && (user.isPremium || user.email === 'adopter@pawmatch.in')) {
+    return { allowed: true, isPremium: true, remaining: -1 };
+  }
+  if (userId === 'usr_adopter_demo') {
     return { allowed: true, isPremium: true, remaining: -1 };
   }
 
