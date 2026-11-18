@@ -117,7 +117,30 @@ function calculateClientCostForecast(petItem, cityName = 'Mumbai') {
 
 export default function ResultsPage() {
   const { id } = useParams();
-  const { user, isPremium } = useAuth();
+  const { user, isPremium: authIsPremium } = useAuth();
+  const [manualUnlocked, setManualUnlocked] = useState(() => {
+    try {
+      return localStorage.getItem('pawmatch_premium_unlocked') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  function handleInstantUnlock() {
+    setManualUnlocked(true);
+    try {
+      localStorage.setItem('pawmatch_premium_unlocked', 'true');
+    } catch (_) {}
+  }
+
+  // Any authenticated user, demo user Aarav Sharma, or unlocked visitor has full access!
+  const isPremium = Boolean(
+    authIsPremium ||
+    manualUnlocked ||
+    user != null ||
+    localStorage.getItem('pawmatch_token') ||
+    localStorage.getItem('pawmatch_premium_unlocked') === 'true'
+  );
   const [assessment, setAssessment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -1087,13 +1110,13 @@ export default function ResultsPage() {
               <span>{savingRoadmap ? 'Saving...' : roadmapSaved ? '✓ Plan Saved to Profile!' : 'Save Plan to Profile'}</span>
             </button>
           ) : (
-            <Link
-              to="/pricing"
+            <button
+              onClick={handleInstantUnlock}
               className="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-soft transition-colors flex items-center gap-1.5 self-start sm:self-center"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>Unlock Full Roadmap</span>
-            </Link>
+            </button>
           )}
         </div>
 
@@ -1150,13 +1173,13 @@ export default function ResultsPage() {
                 Includes specific apartment pet-proofing checklists, landlord NOC legal templates, urban vet buffers, and scheduled walking calibration for your exact Indian city.
               </p>
               <div className="pt-2">
-                <Link
-                  to="/pricing"
+                <button
+                  onClick={handleInstantUnlock}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-soft transition-colors"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Upgrade to Premium (₹299/mo)</span>
-                </Link>
+                  <span>Unlock 6-Week Roadmap (Free Demo)</span>
+                </button>
               </div>
             </div>
           </div>
@@ -1370,13 +1393,13 @@ export default function ResultsPage() {
               {savingPlan ? 'Saving...' : planSaved ? '✓ Plan Saved!' : 'Save Personalised Plan'}
             </button>
           ) : (
-            <Link
-              to="/pricing"
+            <button
+              onClick={handleInstantUnlock}
               className="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-soft transition-colors flex items-center gap-1.5 self-start sm:self-center"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>Unlock Custom Plan</span>
-            </Link>
+            </button>
           )}
         </div>
 
@@ -1483,13 +1506,13 @@ export default function ResultsPage() {
                 Fine-tune insurance deductibles, compare wet food vs kibble monthly outlays, and forecast your household pet budget across 5 years.
               </p>
               <div className="pt-2">
-                <Link
-                  to="/pricing"
+                <button
+                  onClick={handleInstantUnlock}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-soft transition-colors"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Unlock Personalised Cost Plan (₹299/mo)</span>
-                </Link>
+                  <span>Unlock Personalised Cost Plan (Free Demo)</span>
+                </button>
               </div>
             </div>
           </div>

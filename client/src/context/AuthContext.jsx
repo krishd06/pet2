@@ -5,15 +5,21 @@ const AuthContext = createContext(null);
 
 function normalizeUser(u) {
   if (!u) return null;
-  const isDemo = u.email === 'adopter@pawmatch.in' || u.id === 'usr_adopter_demo';
   return {
     ...u,
-    isPremium: isDemo ? true : Boolean(u.isPremium)
+    isPremium: true
   };
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const cached = localStorage.getItem('pawmatch_user');
+      return cached ? normalizeUser(JSON.parse(cached)) : null;
+    } catch {
+      return null;
+    }
+  });
   const [guestToken, setGuestToken] = useState(() => localStorage.getItem('pawmatch_guest_token') || null);
   const [loading, setLoading] = useState(true);
 
@@ -27,12 +33,21 @@ export function AuthProvider({ children }) {
         try {
           const res = await api.getMe();
           if (res && res.user) {
-            setUser(normalizeUser(res.user));
+            const normalized = normalizeUser(res.user);
+            setUser(normalized);
+            try {
+              localStorage.setItem('pawmatch_user', JSON.stringify(normalized));
+            } catch (_) {}
           }
         } catch (err) {
-          console.warn('Stored session invalid or expired:', err.message);
-          localStorage.removeItem('pawmatch_token');
-          setUser(null);
+          console.warn('Stored session revalidation note:', err.message);
+          // If network failed on serverless, preserve cached user so session does not get abruptly dropped
+          const cached = localStorage.getItem('pawmatch_user');
+          if (cached) {
+            try {
+              setUser(normalizeUser(JSON.parse(cached)));
+            } catch (_) {}
+          }
         }
       }
 
@@ -63,7 +78,11 @@ export function AuthProvider({ children }) {
     try {
       const res = await api.getMe();
       if (res && res.user) {
-        setUser(normalizeUser(res.user));
+        const normalized = normalizeUser(res.user);
+        setUser(normalized);
+        try {
+          localStorage.setItem('pawmatch_user', JSON.stringify(normalized));
+        } catch (_) {}
       }
     } catch (e) {
       console.warn('Failed to refresh user:', e.message);
@@ -76,6 +95,9 @@ export function AuthProvider({ children }) {
       localStorage.setItem('pawmatch_token', res.token);
       const normalized = normalizeUser(res.user);
       setUser(normalized);
+      try {
+        localStorage.setItem('pawmatch_user', JSON.stringify(normalized));
+      } catch (_) {}
       return normalized;
     }
   }
@@ -93,6 +115,9 @@ export function AuthProvider({ children }) {
       localStorage.setItem('pawmatch_token', res.token);
       const normalized = normalizeUser(res.user);
       setUser(normalized);
+      try {
+        localStorage.setItem('pawmatch_user', JSON.stringify(normalized));
+      } catch (_) {}
       return normalized;
     }
   }
@@ -102,17 +127,21 @@ export function AuthProvider({ children }) {
     if (res && res.user) {
       const normalized = normalizeUser(res.user);
       setUser(normalized);
+      try {
+        localStorage.setItem('pawmatch_user', JSON.stringify(normalized));
+      } catch (_) {}
       return normalized;
     }
   }
 
   function logout() {
     localStorage.removeItem('pawmatch_token');
+    localStorage.removeItem('pawmatch_user');
     setUser(null);
   }
 
-  const isDemo = user?.email === 'adopter@pawmatch.in' || user?.id === 'usr_adopter_demo';
-  const isPremium = Boolean(user?.isPremium || isDemo);
+  // Any logged-in user or active token holder in this demo has full premium privileges
+  const isPremium = Boolean(user != null || localStorage.getItem('pawmatch_token'));
 
   const value = {
     user,
