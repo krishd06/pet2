@@ -166,10 +166,6 @@ export default function PricingPage() {
                 <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
                 <span>Up to 5 AI Pet Advisor questions per day</span>
               </div>
-              <div className="flex items-start gap-2.5">
-                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                <span>Browse verified shelter adoptable pets</span>
-              </div>
             </div>
           </div>
 
@@ -192,7 +188,7 @@ export default function PricingPage() {
               <span className="text-xs font-bold uppercase tracking-wider text-brand-700">Dedicated Care</span>
               <h3 className="text-2xl font-black text-sand-900">PawMatch Premium</h3>
               <p className="text-xs text-sand-800">
-                Actionable readiness remediation, custom budgets, unlimited AI advisor, and post-adoption tracking.
+                Actionable readiness remediation, custom budgets, and unlimited AI advisor access.
               </p>
             </div>
 
@@ -213,14 +209,6 @@ export default function PricingPage() {
               <div className="flex items-start gap-2.5">
                 <Check className="w-4 h-4 text-brand-600 flex-shrink-0 mt-0.5" />
                 <span className="font-semibold">Personalised Cost Plan & customizable Indian pet budget</span>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <Check className="w-4 h-4 text-brand-600 flex-shrink-0 mt-0.5" />
-                <span className="font-semibold">Post-Adoption Reminders Tracker (vaccines, deworming, vet checkups)</span>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <Check className="w-4 h-4 text-brand-600 flex-shrink-0 mt-0.5" />
-                <span className="font-semibold">Priority response on Trial Foster-to-Adopt requests</span>
               </div>
             </div>
           </div>
@@ -255,7 +243,7 @@ export default function PricingPage() {
           <span>Payment Transparency & Security</span>
         </h4>
         <p className="text-xs text-sand-800 leading-relaxed">
-          PawMatch currently processes payments in <strong>Test / Mock Simulation Mode</strong>. No real credit card or bank credentials are required or debited. Subscriptions allow you to unlock advanced roadmaps and medical reminders immediately.
+          PawMatch currently processes payments in <strong>Test / Mock Simulation Mode</strong>. No real credit card or bank credentials are required or debited. Subscriptions allow you to unlock advanced roadmaps and custom budgets immediately.
         </p>
       </div>
 

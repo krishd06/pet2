@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '../db/supabase.js';
 import { getDb } from '../db/index.js';
+import { getBreedImage } from '../data/breedImages.js';
 
 let cachedBreeds = null;
 let cacheTimestamp = 0;
@@ -24,6 +25,7 @@ export async function getAllBreedsData() {
           id,
           name,
           slug,
+          image_url,
           is_indian_native,
           size_category,
           lifespan_min_years,
@@ -107,6 +109,7 @@ export async function getAllBreedsData() {
             name: b.name,
             breed: b.name,
             slug: b.slug,
+            image_url: getBreedImage(b.slug) || b.image_url || null,
             species: speciesSlug,
             species_name: b.species?.name || 'Pet',
             is_native: isNative,
@@ -149,5 +152,8 @@ export async function getAllBreedsData() {
   // 2. Fallback to SQL/InMemory database if Supabase query is unavailable
   const db = getDb();
   const result = await db.query('SELECT * FROM pets ORDER BY is_native DESC, name ASC');
-  return result.rows || [];
+  return (result.rows || []).map((p) => ({
+    ...p,
+    image_url: getBreedImage(p.slug) || p.image_url || null
+  }));
 }

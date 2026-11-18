@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import ProfileModal from './ProfileModal.jsx';
 import {
   PawPrint,
   Compass,
@@ -9,31 +10,48 @@ import {
   Menu,
   X,
   LogOut,
-  Sliders,
-  Building2,
   Sparkles,
-  Calendar,
-  Building
+  Building,
+  ChevronDown,
+  Settings,
+  FileText
 } from 'lucide-react';
 
 export default function Header() {
-  const { user, isAuthenticated, isAdmin, isShelter, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const isHome = location.pathname === '/';
 
-  // 3 Primary Features strictly kept in main header as requested
+  // Close user dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setUserDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close dropdown on route change
+  useEffect(() => {
+    setUserDropdownOpen(false);
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  // Primary Features in main header
   const coreFeatures = [
     { to: '/quiz', label: 'Match Quiz', icon: Compass },
-    { to: '/pets', label: 'Explore Breeds', icon: PawPrint },
-    { to: '/adopt', label: 'Adoptable Pets', icon: HeartHandshake }
+    { to: '/pets', label: 'Explore Breeds', icon: PawPrint }
   ];
 
-  // Secondary pages available in drawer for comprehensive site navigation
+  // Secondary pages available in drawer for site navigation
   const secondaryLinks = [
-    { to: '/foster', label: 'Trial Foster', icon: Calendar },
-    { to: '/first-30-days', label: 'First 30 Days Roadmap', icon: Calendar },
     { to: '/advisor', label: 'AI Pet Advisor', icon: Sparkles },
     { to: '/services', label: 'Veterinary & Services', icon: Building },
     { to: '/about', label: 'About Us', icon: HeartHandshake }
@@ -101,39 +119,85 @@ export default function Header() {
           <div className="hidden sm:flex items-center gap-3 shrink-0">
             {isAuthenticated ? (
               <div className="flex items-center gap-2">
-                <Link
-                  to="/dashboard"
-                  className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full border transition-all ${
-                    isActive('/dashboard')
-                      ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
-                      : 'border-white/15 bg-black/30 text-stone-200 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  <User className="w-3.5 h-3.5 text-amber-400" />
-                  <span>{user.name}</span>
-                </Link>
-
-                {isShelter && (
-                  <Link
-                    to="/shelter/dashboard"
-                    className="flex items-center gap-1 text-xs font-semibold px-3 py-2 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20"
-                    title="Shelter Portal"
+                
+                {/* Profile Pill with Dropdown Menu */}
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                    className={`flex items-center gap-2 text-xs font-semibold px-3.5 py-2 rounded-full border transition-all ${
+                      userDropdownOpen || isActive('/dashboard') || isActive('/profile')
+                        ? 'bg-amber-500/20 border-amber-500/50 text-amber-300 shadow-md shadow-amber-500/10'
+                        : 'border-white/15 bg-black/30 text-stone-200 hover:text-white hover:bg-white/10'
+                    }`}
+                    aria-label="User Profile Menu"
                   >
-                    <Building2 className="w-3.5 h-3.5 text-amber-400" />
-                    <span className="hidden lg:inline">Shelter</span>
-                  </Link>
-                )}
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-amber-500 to-orange-500 text-stone-950 font-black text-[10px] flex items-center justify-center">
+                      {user.name ? user.name[0].toUpperCase() : 'U'}
+                    </div>
+                    <span>{user.name}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 text-stone-400 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180 text-amber-400' : ''}`} />
+                  </button>
 
-                {isAdmin && (
-                  <Link
-                    to="/admin"
-                    className="flex items-center gap-1 text-xs font-semibold px-3 py-2 rounded-full bg-white/10 text-stone-200 border border-white/10 hover:bg-white/20"
-                    title="Admin"
-                  >
-                    <Sliders className="w-3.5 h-3.5" />
-                    <span className="hidden lg:inline">Admin</span>
-                  </Link>
-                )}
+                  {/* Dropdown Popover */}
+                  {userDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-[#1c1917] border border-white/15 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-white">
+                      <div className="px-3 py-2.5 border-b border-white/10 mb-1">
+                        <p className="text-xs font-bold text-white truncate">{user.name}</p>
+                        <p className="text-[11px] text-stone-400 truncate">{user.email}</p>
+                        <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                          {user.role || 'Adopter'}
+                        </span>
+                      </div>
+
+                      <div className="space-y-0.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUserDropdownOpen(false);
+                            setProfileModalOpen(true);
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-stone-200 hover:text-white hover:bg-white/10 transition-colors text-left"
+                        >
+                          <User className="w-3.5 h-3.5 text-amber-400" />
+                          <span>View & Edit Profile</span>
+                        </button>
+
+                        <Link
+                          to="/dashboard"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-stone-200 hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-amber-400" />
+                          <span>My Compatibility Reports</span>
+                        </Link>
+
+                        <Link
+                          to="/quiz"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-stone-200 hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                          <Compass className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Match Quiz</span>
+                        </Link>
+                      </div>
+
+                      <div className="pt-1.5 border-t border-white/10 mt-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUserDropdownOpen(false);
+                            logout();
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-colors text-left"
+                        >
+                          <LogOut className="w-3.5 h-3.5" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 <button
                   onClick={logout}
@@ -231,13 +295,24 @@ export default function Header() {
           <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
             {isAuthenticated ? (
               <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setProfileModalOpen(true);
+                  }}
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold text-stone-200 hover:bg-white/5 text-left"
+                >
+                  <User className="w-4 h-4 text-amber-400" />
+                  <span>My Profile ({user.name})</span>
+                </button>
                 <Link
                   to="/dashboard"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold text-stone-200 hover:bg-white/5"
                 >
-                  <User className="w-4 h-4 text-amber-400" />
-                  <span>My Dashboard ({user.name})</span>
+                  <FileText className="w-4 h-4 text-amber-400" />
+                  <span>Compatibility Reports</span>
                 </Link>
                 <button
                   onClick={() => {
@@ -264,6 +339,12 @@ export default function Header() {
           </div>
         </div>
       )}
+
+      {/* Full User Profile Modal */}
+      <ProfileModal
+        isOpen={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+      />
     </header>
   );
 }

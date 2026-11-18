@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api.js';
+import { getBreedImage } from '../data/breedImages.js';
 import {
   PawPrint,
   Search,
@@ -187,63 +188,85 @@ export default function ExplorePetsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {pets.map((pet) => (
+          {pets.map((pet) => {
+            const imgSrc = getBreedImage(pet) || pet.image_url;
+            return (
             <div
               key={pet.id}
               className="bg-white rounded-3xl border border-sand-200 overflow-hidden shadow-card hover:shadow-hover transition-all flex flex-col justify-between group"
             >
-              <div className="p-6 space-y-4">
-                
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="flex items-center gap-1.5 mb-1">
-                      {pet.is_native && (
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 flex items-center gap-1">
-                          <Award className="w-3 h-3" /> Native Indie
-                        </span>
-                      )}
-                      <span className="text-xs text-sand-800 capitalize font-medium">{pet.species}</span>
+              <div>
+                {/* Breed Image Banner */}
+                <Link to={`/pets/${pet.slug}`} className="block relative h-48 w-full bg-sand-100 overflow-hidden">
+                  {imgSrc ? (
+                    <img
+                      src={imgSrc}
+                      alt={pet.name}
+                      loading="lazy"
+                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-sand-100 to-amber-50">
+                      <PawPrint className="w-10 h-10 text-sand-400" />
                     </div>
-                    <h3 className="text-lg font-black text-sand-900 group-hover:text-brand-600 transition-colors">
-                      {pet.name}
-                    </h3>
+                  )}
+                  <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/45 via-black/15 to-transparent pointer-events-none" />
+
+                  <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                    {pet.is_native && (
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-50/95 backdrop-blur-sm text-emerald-800 border border-emerald-200/80 shadow-sm flex items-center gap-1">
+                        <Award className="w-3 h-3" /> Native Indie
+                      </span>
+                    )}
                   </div>
 
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg bg-sand-100 text-sand-800 flex-shrink-0">
+                  <span className="absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur-sm text-sand-900 shadow-sm">
                     {pet.size}
                   </span>
-                </div>
+                </Link>
 
-                <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                  <div className="bg-sand-50 p-2 rounded-xl">
-                    <span className="block text-[10px] text-sand-800">Energy</span>
-                    <span className="font-bold text-sand-900">{pet.energy_level}/5</span>
+                <div className="p-6 space-y-4">
+                  <div>
+                    <span className="text-xs text-sand-800 capitalize font-medium block mb-0.5">
+                      {pet.species}
+                    </span>
+                    <Link to={`/pets/${pet.slug}`}>
+                      <h3 className="text-lg font-black text-sand-900 group-hover:text-brand-600 transition-colors leading-snug">
+                        {pet.name}
+                      </h3>
+                    </Link>
                   </div>
-                  <div className="bg-sand-50 p-2 rounded-xl">
-                    <span className="block text-[10px] text-sand-800">Heat Fit</span>
-                    <span className="font-bold text-sand-900">{pet.heat_tolerance}/5</span>
+
+                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                    <div className="bg-sand-50 p-2 rounded-xl">
+                      <span className="block text-[10px] text-sand-800">Energy</span>
+                      <span className="font-bold text-sand-900">{pet.energy_level}/5</span>
+                    </div>
+                    <div className="bg-sand-50 p-2 rounded-xl">
+                      <span className="block text-[10px] text-sand-800">Heat Fit</span>
+                      <span className="font-bold text-sand-900">{pet.heat_tolerance}/5</span>
+                    </div>
+                    <div className="bg-sand-50 p-2 rounded-xl">
+                      <span className="block text-[10px] text-sand-800">Est. Cost</span>
+                      <span className="font-bold text-emerald-700">₹{pet.base_monthly_cost_inr}/mo</span>
+                    </div>
                   </div>
-                  <div className="bg-sand-50 p-2 rounded-xl">
-                    <span className="block text-[10px] text-sand-800">Est. Cost</span>
-                    <span className="font-bold text-emerald-700">₹{pet.base_monthly_cost_inr}/mo</span>
+
+                  <div className="text-xs text-sand-800 space-y-1">
+                    <div className="flex justify-between">
+                      <span>Min Living Space:</span>
+                      <span className="font-semibold text-sand-900">{pet.min_space_sqft} sq ft</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Max Alone Time:</span>
+                      <span className="font-semibold text-sand-900">{pet.max_alone_hours} hrs/day</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Coat Type:</span>
+                      <span className="font-semibold text-sand-900 capitalize">{pet.coat_type}</span>
+                    </div>
                   </div>
                 </div>
-
-                <div className="text-xs text-sand-800 space-y-1">
-                  <div className="flex justify-between">
-                    <span>Min Living Space:</span>
-                    <span className="font-semibold text-sand-900">{pet.min_space_sqft} sq ft</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Max Alone Time:</span>
-                    <span className="font-semibold text-sand-900">{pet.max_alone_hours} hrs/day</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Coat Type:</span>
-                    <span className="font-semibold text-sand-900 capitalize">{pet.coat_type}</span>
-                  </div>
-                </div>
-
               </div>
 
               <div className="p-4 bg-sand-50 border-t border-sand-200">
@@ -256,7 +279,8 @@ export default function ExplorePetsPage() {
               </div>
 
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

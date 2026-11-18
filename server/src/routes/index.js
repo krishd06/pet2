@@ -1,7 +1,7 @@
 import express from 'express';
 import { checkDbHealth } from '../db/index.js';
 import { checkMongoHealth } from '../db/mongo.js';
-import { register, login, getMe, createGuestToken } from '../controllers/authController.js';
+import { register, login, getMe, updateProfile, createGuestToken } from '../controllers/authController.js';
 import { getQuestionnaire } from '../controllers/questionnaireController.js';
 import { createAssessment, getAssessmentById, getMyAssessments } from '../controllers/assessmentController.js';
 import { getPets, getPetBySlug } from '../controllers/petsController.js';
@@ -112,6 +112,7 @@ router.get('/health', async (req, res) => {
 router.post('/auth/register', register);
 router.post('/auth/login', login);
 router.get('/auth/me', requireAuth, getMe);
+router.put('/auth/profile', requireAuth, updateProfile);
 router.post('/auth/guest-token', createGuestToken);
 
 // Questionnaire Routes

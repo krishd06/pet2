@@ -11,16 +11,12 @@ import QuestionnairePage from './pages/QuestionnairePage.jsx';
 import ResultsPage from './pages/ResultsPage.jsx';
 import ExplorePetsPage from './pages/ExplorePetsPage.jsx';
 import PetDetailPage from './pages/PetDetailPage.jsx';
-import AdoptableAnimalsPage from './pages/AdoptableAnimalsPage.jsx';
-import TrialFosterPage from './pages/TrialFosterPage.jsx';
-import First30DaysPage from './pages/First30DaysPage.jsx';
 import AdvisorPage from './pages/AdvisorPage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
 import AuthPage from './pages/AuthPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
-import AdminPage from './pages/AdminPage.jsx';
+import ProfilePage from './pages/ProfilePage.jsx';
 import PricingPage from './pages/PricingPage.jsx';
-import ShelterDashboardPage from './pages/ShelterDashboardPage.jsx';
 import ServicesPage from './pages/ServicesPage.jsx';
 import ForPartnersPage from './pages/ForPartnersPage.jsx';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx';
@@ -44,12 +40,8 @@ export default function App() {
           <Route path="/results/:id" element={<ResultsPage />} />
           <Route path="/pets" element={<ExplorePetsPage />} />
           <Route path="/pets/:slug" element={<PetDetailPage />} />
-          <Route path="/adopt" element={<AdoptableAnimalsPage />} />
-          <Route path="/foster" element={<TrialFosterPage />} />
-          <Route path="/first-30-days" element={<First30DaysPage />} />
           <Route path="/advisor" element={<AdvisorPage />} />
           <Route path="/pricing" element={<PricingPage />} />
-          <Route path="/shelter/dashboard" element={<ShelterDashboardPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/for-partners" element={<ForPartnersPage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
@@ -57,7 +49,7 @@ export default function App() {
           <Route path="/affiliate-disclosure" element={<AffiliateDisclosurePage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="*" element={<HomePage />} />
         </Routes>
       </main>

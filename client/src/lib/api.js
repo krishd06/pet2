@@ -54,6 +54,7 @@ export const api = {
   register: (body) => request('/api/auth/register', { method: 'POST', body: JSON.stringify(body) }),
   login: (body) => request('/api/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   getMe: () => request('/api/auth/me'),
+  updateProfile: (body) => request('/api/auth/profile', { method: 'PUT', body: JSON.stringify(body) }),
   getGuestToken: () => request('/api/auth/guest-token', { method: 'POST' }),
 
   // Questionnaire

@@ -174,3 +174,59 @@ export async function createGuestToken(req, res) {
     return res.status(500).json({ error: 'Failed to generate guest token' });
   }
 }
+
+export async function updateProfile(req, res) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const { name, email, phone, city, password } = req.body;
+    const db = getDb();
+
+    // Check if new email is taken by another user
+    if (email && email !== req.user.email) {
+      const existing = await db.query('SELECT id FROM users WHERE email = $1 AND id != $2', [email, req.user.id]);
+      if (existing.rows && existing.rows.length > 0) {
+        return res.status(409).json({ error: 'This email is already in use by another account.' });
+      }
+    }
+
+    let passwordHash = null;
+    if (password && password.trim().length >= 6) {
+      passwordHash = await bcrypt.hash(password, 10);
+    }
+
+    const newName = name ? name.trim() : req.user.name;
+    const newEmail = email ? email.trim() : req.user.email;
+
+    if (passwordHash) {
+      await db.query(
+        'UPDATE users SET name = $1, email = $2, password_hash = $3 WHERE id = $4',
+        [newName, newEmail, passwordHash, req.user.id]
+      );
+    } else {
+      await db.query(
+        'UPDATE users SET name = $1, email = $2 WHERE id = $3',
+        [newName, newEmail, req.user.id]
+      );
+    }
+
+    // Refresh updated user
+    const updatedRes = await db.query('SELECT id, email, role, name, created_at FROM users WHERE id = $1', [req.user.id]);
+    const updatedUser = updatedRes.rows && updatedRes.rows[0] ? updatedRes.rows[0] : { ...req.user, name: newName, email: newEmail };
+
+    return res.json({
+      message: 'Profile updated successfully',
+      user: {
+        ...req.user,
+        ...updatedUser,
+        phone: phone || req.user.phone || '',
+        city: city || req.user.city || 'Mumbai'
+      }
+    });
+  } catch (err) {
+    console.error('Update profile error:', err);
+    return res.status(500).json({ error: 'Failed to update profile' });
+  }
+}

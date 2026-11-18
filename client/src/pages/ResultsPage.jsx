@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../lib/api.js';
+import { getBreedImage } from '../data/breedImages.js';
 import CompareModal from '../components/CompareModal.jsx';
 import {
   Award,
@@ -371,14 +372,6 @@ export default function ResultsPage() {
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Retake Quiz</span>
           </Link>
-
-          <Link
-            to="/adopt"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-soft transition-colors"
-          >
-            <span>Adoptable Pets</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
         </div>
       </div>
 
@@ -508,21 +501,41 @@ export default function ResultsPage() {
             const rankLabel = idx === 0 ? '🏆 #1 Top Match' : idx === 1 ? '⭐ #2 Strong Match' : '✨ #3 Best Alternative';
             const badgeColor = idx === 0 ? 'from-amber-500 to-orange-500 text-stone-950' : idx === 1 ? 'from-emerald-500 to-teal-500 text-white' : 'from-indigo-500 to-sky-500 text-white';
 
+            const imgSrc = getBreedImage(pet) || pet.image_url;
+
             return (
               <div
                 key={item.petId || item.pet?.id || idx}
                 className="bg-white rounded-3xl border-2 border-sand-200 hover:border-brand-400 shadow-card hover:shadow-hover transition-all duration-300 flex flex-col justify-between overflow-hidden relative group"
               >
-                {/* Card Header & Rank Ribbon */}
-                <div className="p-6 space-y-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="space-y-1">
-                      <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-gradient-to-r ${badgeColor} shadow-sm`}>
+                <div>
+                  {imgSrc && (
+                    <div className="relative h-44 w-full bg-sand-100 overflow-hidden">
+                      <img
+                        src={imgSrc}
+                        alt={item.petName || pet.name}
+                        loading="lazy"
+                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+                      <span className={`absolute top-3 left-3 inline-block px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-gradient-to-r ${badgeColor} shadow-sm`}>
                         {rankLabel}
                       </span>
-                      <h3 className="text-xl font-black text-sand-900 leading-snug group-hover:text-brand-600 transition-colors">
-                        {item.petName || pet.name}
-                      </h3>
+                    </div>
+                  )}
+
+                  {/* Card Header & Rank Ribbon */}
+                  <div className="p-6 space-y-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="space-y-1">
+                        {!imgSrc && (
+                          <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-gradient-to-r ${badgeColor} shadow-sm`}>
+                            {rankLabel}
+                          </span>
+                        )}
+                        <h3 className="text-xl font-black text-sand-900 leading-snug group-hover:text-brand-600 transition-colors">
+                          {item.petName || pet.name}
+                        </h3>
                       <div className="flex items-center gap-1.5 text-xs text-sand-800">
                         <span className="capitalize font-semibold">{pet.species}</span>
                         <span>•</span>
@@ -587,6 +600,7 @@ export default function ResultsPage() {
                       <span className="font-black text-sand-900">{pet.max_alone_hours || 6} hrs</span>
                     </div>
                   </div>
+                </div>
                 </div>
 
                 {/* Card Action Buttons */}
@@ -1363,6 +1377,7 @@ function PetResultCard({ petItem, isExpanded, onToggleExpand, isCompared, onTogg
   const score = petItem.matchScore;
   const tier = petItem.tier;
   const isNative = petItem.isNative || pet.is_native;
+  const imgSrc = getBreedImage(pet) || pet.image_url;
 
   const scoreBadgeColor =
     score >= 75
@@ -1372,8 +1387,25 @@ function PetResultCard({ petItem, isExpanded, onToggleExpand, isCompared, onTogg
       : 'bg-sand-200 text-sand-800 border-sand-300';
 
   return (
-    <div className="bg-white rounded-3xl border border-sand-200 overflow-hidden shadow-card hover:shadow-hover transition-all flex flex-col justify-between">
-      
+    <div className="bg-white rounded-3xl border border-sand-200 overflow-hidden shadow-card hover:shadow-hover transition-all flex flex-col justify-between group">
+      <div>
+        {imgSrc && (
+          <div className="relative h-44 w-full bg-sand-100 overflow-hidden">
+            <img
+              src={imgSrc}
+              alt={pet.name}
+              loading="lazy"
+              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+            />
+            <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+            {isNative && (
+              <span className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-50/95 backdrop-blur-sm text-emerald-800 border border-emerald-200/80 shadow-sm flex items-center gap-1">
+                <Award className="w-3 h-3" /> Native Indie
+              </span>
+            )}
+          </div>
+        )}
+
       {/* Top Details */}
       <div className="p-6 space-y-4">
         
@@ -1485,6 +1517,7 @@ function PetResultCard({ petItem, isExpanded, onToggleExpand, isCompared, onTogg
           </div>
         )}
 
+      </div>
       </div>
 
       {/* Card Action Footer */}

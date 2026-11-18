@@ -86,6 +86,14 @@ export function AuthProvider({ children }) {
     }
   }
 
+  async function updateUserProfile(payload) {
+    const res = await api.updateProfile(payload);
+    if (res && res.user) {
+      setUser(res.user);
+      return res.user;
+    }
+  }
+
   function logout() {
     localStorage.removeItem('pawmatch_token');
     setUser(null);
@@ -96,14 +104,13 @@ export function AuthProvider({ children }) {
     guestToken,
     loading,
     isAuthenticated: Boolean(user),
-    isAdmin: user?.role === 'admin',
-    isShelter: user?.role === 'shelter',
-    isAdopter: user?.role === 'adopter',
+    isAdopter: true,
     isPremium: Boolean(user?.isPremium),
     login,
     register,
     logout,
-    refreshUser
+    refreshUser,
+    updateUserProfile
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

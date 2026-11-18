@@ -42,15 +42,6 @@ export default function Footer() {
                 <Link to="/pets" className="hover:text-brand-400 transition-colors">Pet Breed Directory</Link>
               </li>
               <li>
-                <Link to="/adopt" className="hover:text-brand-400 transition-colors">Adoptable Animals</Link>
-              </li>
-              <li>
-                <Link to="/foster" className="hover:text-brand-400 transition-colors">Self-Managed Foster Trials</Link>
-              </li>
-              <li>
-                <Link to="/first-30-days" className="hover:text-brand-400 transition-colors">First 30 Days (3-3-3 Rule)</Link>
-              </li>
-              <li>
                 <Link to="/services" className="hover:text-brand-400 transition-colors">Services Directory</Link>
               </li>
               <li>

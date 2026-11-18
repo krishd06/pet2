@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../lib/api.js';
+import { getBreedImage } from '../data/breedImages.js';
 import {
   PawPrint,
   Award,
@@ -10,7 +11,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   ArrowLeft,
-  HeartHandshake,
   Compass,
   Sparkles,
   Info
@@ -117,8 +117,21 @@ export default function PetDetailPage() {
 
       {/* Hero Header */}
       <div className="bg-white rounded-3xl p-6 sm:p-10 border border-sand-200 shadow-card grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-        
-        <div className="md:col-span-8 space-y-4">
+
+        {/* Breed Photo */}
+        {(getBreedImage(pet) || pet.image_url) && (
+          <div className="md:col-span-4">
+            <div className="aspect-[4/3] w-full rounded-2xl overflow-hidden bg-sand-100 border border-sand-200 shadow-sm">
+              <img
+                src={getBreedImage(pet) || pet.image_url}
+                alt={pet.name}
+                className="w-full h-full object-cover object-center"
+              />
+            </div>
+          </div>
+        )}
+
+        <div className={(getBreedImage(pet) || pet.image_url) ? 'md:col-span-4 space-y-4' : 'md:col-span-8 space-y-4'}>
           <div className="flex flex-wrap items-center gap-2">
             {pet.is_native && (
               <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 flex items-center gap-1.5 shadow-sm">
@@ -148,14 +161,6 @@ export default function PetDetailPage() {
             >
               <Compass className="w-4 h-4" />
               <span>Test Lifestyle Match</span>
-            </Link>
-
-            <Link
-              to={`/adopt?breed=${encodeURIComponent(pet.breed)}`}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-sand-100 hover:bg-sand-200 text-sand-900 font-bold text-xs sm:text-sm transition-colors"
-            >
-              <HeartHandshake className="w-4 h-4 text-brand-600" />
-              <span>Adoptable Animals</span>
             </Link>
           </div>
         </div>
