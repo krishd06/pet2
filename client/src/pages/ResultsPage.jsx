@@ -137,14 +137,56 @@ export default function ResultsPage() {
   const [costForecast, setCostForecast] = useState(null);
   const [costLoading, setCostLoading] = useState(false);
 
-  // Feature E: Premium Remediation Roadmap State
+  // Feature E: Premium 6-Week Remediation & Transition Roadmap State
   const [roadmapSteps, setRoadmapSteps] = useState([
-    { id: 1, week: 'Week 1', title: 'Landlord & Housing Society NOC', desc: 'Secure formal written approval and review society by-laws regarding pets and lift usage.', done: false },
-    { id: 2, week: 'Week 1', title: 'Balcony & Home Pet-Proofing', desc: 'Install safety net mesh on high-rise balconies, tuck away loose electrical cables, and remove toxic plants.', done: false },
-    { id: 3, week: 'Week 2', title: '24/7 Emergency Vet Mapping', desc: 'Locate 2 verified 24/7 veterinary emergency clinics within a 5km radius and save their emergency helpline.', done: false },
-    { id: 4, week: 'Week 2', title: 'Starter Essentials Procurement', desc: 'Order stainless steel heavy-bottom bowls, chew-proof harness, parasite prevention, and high-protein puppy/dog food.', done: false },
-    { id: 5, week: 'Week 3', title: 'Daily Walking Schedule Calibration', desc: 'Fix 45-60 min morning and evening exercise windows to acclimatize your urban work routine.', done: false },
-    { id: 6, week: 'Week 4', title: 'Shelter Trial Foster Immersion', desc: 'Book a 14-day trial foster with your matched Indie to test real-world household dynamics before final adoption.', done: false },
+    {
+      id: 1,
+      weekNum: 1,
+      phase: 'Legal & Housing',
+      title: 'Society By-Laws & Landlord NOC Clearance',
+      desc: 'Obtain formal written NOC from your landlord and review RWA/housing society by-laws citing Animal Welfare Board of India (AWBI) guidelines to safeguard against arbitrary pet restrictions or lift bans.',
+      tags: ['AWBI Circular Compliance', 'Landlord NOC Agreement', 'Lift & Common Area Rights']
+    },
+    {
+      id: 2,
+      weekNum: 2,
+      phase: 'Home Safety',
+      title: 'Balcony Safety Netting & Hazard-Proofing',
+      desc: 'Install reinforced pigeon/pet safety mesh on high-rise balconies and windows, secure exposed electrical wiring/inverter cords, and eliminate toxic household plants (Lilies, Dieffenbachia, Aloe).',
+      tags: ['High-Rise Balcony Netting', 'Electrical Cord Concealment', 'Plant Toxicity Audit']
+    },
+    {
+      id: 3,
+      weekNum: 3,
+      phase: 'Healthcare Prep',
+      title: '24/7 Emergency Vet Mapping & Medical Reserve',
+      desc: 'Identify and register with a trusted neighborhood veterinarian plus a 24-hour emergency animal hospital within 5km, and set aside a dedicated ₹10,000 contingency medical reserve.',
+      tags: ['Primary Vet + 24/7 ER Saved', '₹10k Medical Contingency', 'Core Vaccine Verification']
+    },
+    {
+      id: 4,
+      weekNum: 4,
+      phase: 'Supplies & Nutrition',
+      title: 'Starter Essentials & Diet Procurement',
+      desc: 'Procure heavy-bottom stainless steel food/water bowls, an ergonomic Y-harness with a 5ft nylon leash, chew toys, enzymatic odor cleaner, and high-protein food suited for tropical digestion.',
+      tags: ['Ergonomic Y-Harness & Leash', 'Stainless Steel Bowls', 'Enzymatic Odor Spray']
+    },
+    {
+      id: 5,
+      weekNum: 5,
+      phase: 'Arrival & Decompression',
+      title: 'Safe Zone Setup & 3-3-3 Acclimatization',
+      desc: 'Set up a quiet, low-traffic rest corner with familiar bedding before arrival. Strictly enforce zero outside visitors for the first 72 hours, maintaining a peaceful, predictable feeding routine.',
+      tags: ['Quiet Safe Zone Corner', 'Zero Visitors for First 72h', '3-3-3 Rule Acclimatization']
+    },
+    {
+      id: 6,
+      weekNum: 6,
+      phase: 'Routine & Socialization',
+      title: 'Walking Schedule, Leash Manners & Preventives',
+      desc: 'Calibrate dedicated 45-minute morning and evening walking windows around your urban work routine. Initiate positive reinforcement training and administer monthly tick and flea preventives.',
+      tags: ['Fixed 45-Min Walk Windows', 'Positive Reinforcement Basics', 'Monthly Tick/Flea Spot-On']
+    }
   ]);
   const [savingRoadmap, setSavingRoadmap] = useState(false);
   const [roadmapSaved, setRoadmapSaved] = useState(false);
@@ -157,10 +199,6 @@ export default function ResultsPage() {
   const [savingPlan, setSavingPlan] = useState(false);
   const [planSaved, setPlanSaved] = useState(false);
 
-  async function handleToggleRoadmapStep(stepId) {
-    setRoadmapSteps(prev => prev.map(s => s.id === stepId ? { ...s, done: !s.done } : s));
-  }
-
   async function handleSaveRoadmap() {
     if (!user) return;
     setSavingRoadmap(true);
@@ -169,6 +207,7 @@ export default function ResultsPage() {
         assessmentId: id,
         targetPet: selectedCostPet?.pet?.name || 'Selected Pet',
         currentScore: assessment?.readiness?.overallScore || 70,
+        timelineWeeks: 6,
         steps: roadmapSteps
       });
       setRoadmapSaved(true);
@@ -1033,9 +1072,9 @@ export default function ResultsPage() {
                 </span>
               )}
             </div>
-            <h3 className="text-2xl font-black text-sand-900">4-Week Readiness Remediation Roadmap</h3>
+            <h3 className="text-2xl font-black text-sand-900">6-Week Readiness & Transition Roadmap</h3>
             <p className="text-xs text-sand-800 mt-0.5">
-              Targeted step-by-step milestones to raise your readiness score from {readiness.overallScore}% to 95%+ before bringing a dog home.
+              Targeted step-by-step milestones to raise your readiness score from {readiness.overallScore}% to 95%+ before bringing your companion home.
             </p>
           </div>
           {isPremium ? (
@@ -1044,7 +1083,8 @@ export default function ResultsPage() {
               disabled={savingRoadmap}
               className="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-soft transition-colors flex items-center gap-1.5 self-start sm:self-center"
             >
-              {savingRoadmap ? 'Saving...' : roadmapSaved ? '✓ Progress Saved!' : 'Save Progress'}
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{savingRoadmap ? 'Saving...' : roadmapSaved ? '✓ Plan Saved to Profile!' : 'Save Plan to Profile'}</span>
             </button>
           ) : (
             <Link
@@ -1058,33 +1098,44 @@ export default function ResultsPage() {
         </div>
 
         {isPremium ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {roadmapSteps.map((step) => (
               <div
                 key={step.id}
-                onClick={() => handleToggleRoadmapStep(step.id)}
-                className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-3.5 ${
-                  step.done
-                    ? 'bg-emerald-50/50 border-emerald-200 text-emerald-950'
-                    : 'bg-sand-50/60 border-sand-200 hover:border-brand-300'
-                }`}
+                className="bg-sand-50/70 hover:bg-white rounded-2xl border border-sand-200 p-5 space-y-3.5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between"
               >
-                <div className={`mt-0.5 w-5 h-5 rounded-lg border flex items-center justify-center flex-shrink-0 transition-colors ${
-                  step.done ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-sand-400 bg-white'
-                }`}>
-                  {step.done && <CheckCircle2 className="w-3.5 h-3.5" />}
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-sand-200 text-sand-800">
-                      {step.week}
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg bg-brand-50 text-brand-700 border border-brand-200/60">
+                      <Calendar className="w-3 h-3 text-brand-600" />
+                      Week {step.weekNum}
                     </span>
-                    <h4 className={`text-sm font-bold ${step.done ? 'line-through text-sand-800' : 'text-sand-900'}`}>
-                      {step.title}
-                    </h4>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-sand-700">
+                      {step.phase}
+                    </span>
                   </div>
-                  <p className="text-xs text-sand-800 leading-relaxed">{step.desc}</p>
+
+                  <h4 className="text-sm font-extrabold text-sand-900 leading-snug">
+                    {step.title}
+                  </h4>
+
+                  <p className="text-xs text-sand-800 leading-relaxed">
+                    {step.desc}
+                  </p>
                 </div>
+
+                {step.tags && step.tags.length > 0 && (
+                  <div className="pt-2 border-t border-sand-200/70 flex flex-wrap gap-1.5">
+                    {step.tags.map((tag, tIdx) => (
+                      <span
+                        key={tIdx}
+                        className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-white border border-sand-200 text-sand-800"
+                      >
+                        ✓ {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -1094,7 +1145,7 @@ export default function ResultsPage() {
               <div className="w-10 h-10 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center mx-auto">
                 <Lock className="w-5 h-5" />
               </div>
-              <h4 className="text-lg font-black text-sand-900">Customized 4-Week Remediation Roadmap</h4>
+              <h4 className="text-lg font-black text-sand-900">Customized 6-Week Transition Roadmap</h4>
               <p className="text-xs text-sand-800 leading-relaxed">
                 Includes specific apartment pet-proofing checklists, landlord NOC legal templates, urban vet buffers, and scheduled walking calibration for your exact Indian city.
               </p>

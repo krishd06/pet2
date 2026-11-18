@@ -204,7 +204,7 @@ export default function PricingPage() {
               </div>
               <div className="flex items-start gap-2.5">
                 <Check className="w-4 h-4 text-brand-600 flex-shrink-0 mt-0.5" />
-                <span className="font-semibold">Interactive 4-Week Readiness Remediation Roadmap</span>
+                <span className="font-semibold">Comprehensive 6-Week Readiness & Transition Roadmap</span>
               </div>
               <div className="flex items-start gap-2.5">
                 <Check className="w-4 h-4 text-brand-600 flex-shrink-0 mt-0.5" />
